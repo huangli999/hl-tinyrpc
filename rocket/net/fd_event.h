@@ -1,54 +1,43 @@
+#ifndef ROCKET_FDEVENT_H
+#define ROCKET_FDEVENT_H
+#include<sys/epoll.h>
+#include<functional>
+namespace rocket{
+  class FdEvent{
+    public:
+      FdEvent(int fd);
 
-#ifndef ROCKET_NET_FDEVENT_H
-#define ROCKET_NET_FDEVENT_H
+      ~FdEvent();
 
-#include <functional>
-#include <sys/epoll.h>
+      enum TriggerEvent{
+        IN_EVENT=EPOLLIN,
+        OUT_EVENT=EPOLLOUT,
+      };
 
-namespace rocket {
-class FdEvent {
- public:
-  enum TriggerEvent {
-    IN_EVENT = EPOLLIN,
-    OUT_EVENT = EPOLLOUT,
-    ERROR_EVENT = EPOLLERR,
-  };
+      void handler(TriggerEvent event_type);
 
-  FdEvent(int fd);
+      void listen(TriggerEvent event_type,std::function<void()>callback);
 
-  FdEvent();
+      int getFd()const{
 
-  ~FdEvent();
+        return m_fd;
+      }
 
-  void setNonBlock();
+      epoll_event getEpollEvent(){
+        return m_listen_events;
+      }
+    private:
+      int m_fd{-1};
 
-  std::function<void()> handler(TriggerEvent event_type);
+      epoll_event m_listen_events;
 
-  void listen(TriggerEvent event_type, std::function<void()> callback, std::function<void()> error_callback = nullptr);
 
-  // 取消监听
-  void cancle(TriggerEvent event_type);
-
-  int getFd() const {
-    return m_fd;
+      std::function<void()>m_read_callback;
+      std::function<void()>m_write_callback;
   }
 
-  epoll_event getEpollEvent() {
-    return m_listen_events;
-  }
-
-
- protected:
-  int m_fd {-1};
-
-  epoll_event m_listen_events;
-
-  std::function<void()> m_read_callback {nullptr};
-  std::function<void()> m_write_callback {nullptr};
-  std::function<void()> m_error_callback {nullptr};
-
-};
 
 }
+
 
 #endif
