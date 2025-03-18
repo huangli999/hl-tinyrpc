@@ -46,7 +46,7 @@ namespace rocket{
       std::queue<std::function<void()>>m_pending_tasks;
 
     
-   } 
+   };
 
 
 

@@ -34,7 +34,7 @@ namespace rocket{
 
       std::function<void()>m_read_callback;
       std::function<void()>m_write_callback;
-  }
+  };
 
 
 }

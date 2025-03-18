@@ -5,17 +5,17 @@
 
 namespace rocket{
 
-  Fdevent::Fdevent(int fd){
+  FdEvent::FdEvent(int fd){
 
 
   }
 
-  Fdevent::~Fdevent(){
+  FdEvent::~FdEvent(){
 
 
   }
 
-  void Fdevent::handler(TriggerEvent event){
+  void FdEvent::handler(TriggerEvent event){
 
     if(event==TriggerEvent::IN_EVENT)
     {
@@ -28,7 +28,7 @@ namespace rocket{
 
   }
 
-  void Fdevent::listen(TriggerEvent event_type,std::function<void()>callback){
+  void FdEvent::listen(TriggerEvent event_type,std::function<void()>callback){
     if(event_type==TriggerEvent::IN_EVENT)
     {
       m_listen_events.events|=EPOLLIN;
