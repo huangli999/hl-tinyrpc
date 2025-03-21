@@ -15,7 +15,8 @@ Logger*Logger::GetGlobalLogger(){
     {
         return g_logger;
     }
-    return new Logger();
+    g_logger=new Logger();//給g_logger初始化
+    return g_logger;
 }
     std::string LogLevelToString(LogLevel level){
         switch(level){

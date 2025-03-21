@@ -1,11 +1,12 @@
 
+#include<iostream>
 
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 
 
 
 int main() {
-
+  std::cout<<"helloworld"<<std::endl;
   DEBUGLOG("test log %s","11");
   return 0;
 }
