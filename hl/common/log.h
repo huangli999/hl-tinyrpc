@@ -9,8 +9,6 @@
 
 
 
-
-
 namespace hl{
 
 /// @brief 格式化字符串
@@ -33,12 +31,26 @@ std::string formatString(const char* str, Args&&... args) {
 }
     
 #define DEBUGLOG(str,...) \
-    std::string msg=(new hl::LogEvent(hl::LogLevel::Debug))->toString()+hl::formatString(str,##__VA_ARGS__);\
-    hl::Logger::GetGlobalLogger()->pushLog(msg);\
+    if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Debug)\
+    {\
+    hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Debug))->toString()+hl::formatString(str,##__VA_ARGS__));\
     hl::Logger::GetGlobalLogger()->log();\
+    }\
 
-    
-    
+#define INFOLOG(str,...) \
+if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Info)\
+{\
+hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Info))->toString()+hl::formatString(str,##__VA_ARGS__));\
+hl::Logger::GetGlobalLogger()->log();\
+}\
+
+#define ERRORLOG(str,...) \
+if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Error)\
+{\
+hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Error))->toString()+hl::formatString(str,##__VA_ARGS__));\
+hl::Logger::GetGlobalLogger()->log();\
+}\
+
 enum LogLevel {
     Unknown = 0,
     Debug = 1,
@@ -57,11 +69,19 @@ public:
 
     typedef std::shared_ptr<Logger>s_ptr;//智能指针管理内存
 
+    Logger(LogLevel level):m_set_level(level){}
+
     void pushLog(const std::string &msg);//放入队列中
 
     static Logger*GetGlobalLogger();//全局访问接口，对应单例模式
 
+    static void InitGlobalLogger();
+
     void log();//打印日志
+
+    LogLevel getLogLevel()const{
+        return m_set_level;
+    }
 
 private:
 LogLevel m_set_level;
@@ -72,6 +92,7 @@ std::queue<std::string>m_buffer;//阻塞队列
 };
     
 
+LogLevel StringToLogLevel(const std::string&log_level);
 
 std::string LogLevelToString(LogLevel level);
 
