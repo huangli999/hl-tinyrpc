@@ -1,0 +1,1 @@
+#ifndef ROCKETR_COMMON_LOG_H
