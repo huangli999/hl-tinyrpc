@@ -1,5 +1,5 @@
-#ifndef ROCKET_COMMON_LOG_H
-#define ROCKET_COMMON_LOG_H
+#ifndef HL_COMMON_LOG_H
+#define HL_COMMON_LOG_H
 
 
 #include <string>
@@ -7,7 +7,7 @@
 #include <memory>
 #include <semaphore.h>
 
-
+#include"/home/hl/hl-tinyrpc/hl/common/mutex.h"
 
 namespace hl{
 
@@ -33,21 +33,24 @@ std::string formatString(const char* str, Args&&... args) {
 #define DEBUGLOG(str,...) \
     if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Debug)\
     {\
-    hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Debug))->toString()+hl::formatString(str,##__VA_ARGS__));\
+    hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Debug))->toString()+"["\
+    +std::string(__FILE__)+":"+std::to_string(__LINE__)+"]\t"+hl::formatString(str,##__VA_ARGS__));\
     hl::Logger::GetGlobalLogger()->log();\
     }\
 
 #define INFOLOG(str,...) \
 if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Info)\
 {\
-hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Info))->toString()+hl::formatString(str,##__VA_ARGS__));\
+hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Info))->toString()\
++"["+std::string(__FILE__)+":"+std::to_string(__LINE__)+"]\t"+hl::formatString(str,##__VA_ARGS__));\
 hl::Logger::GetGlobalLogger()->log();\
 }\
 
 #define ERRORLOG(str,...) \
 if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Error)\
 {\
-hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Error))->toString()+hl::formatString(str,##__VA_ARGS__));\
+hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Error))->toString()\
++"["+std::string(__FILE__)+":"+std::to_string(__LINE__)+"]\t"+hl::formatString(str,##__VA_ARGS__));\
 hl::Logger::GetGlobalLogger()->log();\
 }\
 
@@ -84,9 +87,12 @@ public:
     }
 
 private:
-LogLevel m_set_level;
+    LogLevel m_set_level;
 
-std::queue<std::string>m_buffer;//阻塞队列
+    std::queue<std::string>m_buffer;//阻塞队列
+
+    Mutex m_mutex;
+
 
 
 };

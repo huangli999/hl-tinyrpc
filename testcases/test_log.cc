@@ -5,8 +5,12 @@
 #include"/home/hl/hl-tinyrpc/hl/common/config.h"
 void *func(void*)
 {
-  DEBUGLOG("debug this is thread in %s","func");
-  INFOLOG("info this is thread in %s","func");
+  int i=20;
+  while(i-->0){
+    DEBUGLOG("debug this is thread in %s","func");
+    INFOLOG("info this is thread in %s","func");
+  }
+
   return NULL;
 }
 
@@ -17,9 +21,12 @@ int main() {
   pthread_t thread;
   pthread_create(&thread,NULL,&func,NULL);
 
-
-  DEBUGLOG("test debug log %s","11");
-  INFOLOG("test info log %s","l1");
+  int i=20;
+  while(i-->0)
+  {
+    DEBUGLOG("test debug log %s","11");
+    INFOLOG("test info log %s","l1");
+  }
   pthread_join(thread,NULL);
   return 0;
 }
