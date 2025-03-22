@@ -8,7 +8,7 @@ namespace hl{
 
     pid_t getThreadId();
 
-    
+    int64_t getNowMs();
 
 
 }

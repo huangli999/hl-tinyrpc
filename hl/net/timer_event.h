@@ -34,6 +34,7 @@ std::function<void()>getCallBack(){
 }
 
 void resetArriveTime();
+
 private:
 int64_t m_arrive_time;
 int64_t m_interval;

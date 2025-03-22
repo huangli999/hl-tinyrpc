@@ -28,6 +28,9 @@ pid_t getThreadId(){
     return syscall(SYS_gettid);
 }
 
+/// @brief 
+/// tv_sec秒数，tv_usec微妙数
+/// @return 
 int64_t getNowMs(){
     timeval val;
     gettimeofday(&val,NULL);

@@ -108,7 +108,7 @@ namespace hl{
         ScopeMutex<Mutex>lock(m_mutex);
         auto tmp=m_pending_events;
         lock.unlock();
-        if(tmp.size())
+        if(tmp.size()==0)
         {   
             return;
         }
@@ -118,12 +118,12 @@ namespace hl{
         if(it->second->getArriveTime()>now){
             interval=it->second->getArriveTime()-now;
         }else{
-            interval=100;
+            interval=100;//100ms
         }
         timespec ts;
         memset(&ts,0,sizeof(ts));
-        ts.tv_sec=interval/1000;
-        ts.tv_nsec=(interval%1000)/1000000;
+        ts.tv_sec=interval/1000;//ms
+        ts.tv_nsec=(interval%1000)*1000000;//ms
 
         itimerspec value;
         memset(&value,0,sizeof(value));
