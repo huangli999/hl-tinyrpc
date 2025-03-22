@@ -94,7 +94,7 @@ std::string LogLevelToString(LogLevel level){
     void Logger::log()
     {
         ScopeMutex<Mutex> lock(m_mutex);
-        std::queue<std::string>tmp=m_buffer;
+        std::queue<std::string>tmp;
         m_buffer.swap(tmp);
         lock.unlock();
         while(!tmp.empty())
