@@ -7,13 +7,13 @@
 #include <memory>
 #include<sys/socket.h>
 
-
 #include<iostream>
 #include<pthread.h>
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 #include"/home/hl/hl-tinyrpc/hl/common/config.h"
 #include"/home/hl/hl-tinyrpc/hl/net/fd_event.h"
 #include"/home/hl/hl-tinyrpc/hl/net/eventloop.h"
+#include"/home/hl/hl-tinyrpc/hl/net/timer_event.h"
 
 int main() {
 
@@ -58,7 +58,11 @@ int main() {
     DEBUGLOG("succ get client fd[%d],peer addr: [%s:%d]",clientfd,inet_ntoa(peer_addr.sin_addr),ntohs(peer_addr.sin_port));
   });
   eventloop->addEpollEvent(&event);
-
+  int i=0;
+  hl::TimerEvent::s_ptr time_event=std::make_shared<hl::TimerEvent>(100,true,[&i](){
+    INFOLOG("trigger timer event,count-%d",i++);
+  });
+  eventloop->addTimeEvent(time_event);
   eventloop->loop();
   return 0;
 }

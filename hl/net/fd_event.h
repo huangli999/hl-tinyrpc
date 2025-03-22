@@ -10,7 +10,8 @@ enum TriggerEvent{
     IN_EVENT=EPOLLIN,
     OUT_EVENT=EPOLLOUT,
 };
-    FdEvent(int fd);
+    FdEvent();
+    FdEvent(int fd):m_fd(fd){}
     
     ~FdEvent();
 

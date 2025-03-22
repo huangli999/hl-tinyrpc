@@ -6,6 +6,7 @@
 #include<queue>
 #include"/home/hl/hl-tinyrpc/hl/common/mutex.h"
 #include"/home/hl/hl-tinyrpc/hl/net/fd_event.h"
+#include"/home/hl/hl-tinyrpc/hl/net/timer.h"
 #include"/home/hl/hl-tinyrpc/hl/net/wakeup_fd_event.h"
 
 namespace hl{
@@ -35,6 +36,9 @@ public:
 
     void initWakeUpFdEvent();
 
+    void initTimer();//初始化定时器
+
+    void addTimeEvent(TimerEvent::s_ptr event);
 private:
     pid_t m_thread_id{0};
 
@@ -51,6 +55,8 @@ private:
     std::queue<std::function<void()>>m_pending_tasks;//io线程的任务队列
 
     Mutex m_mutex;
+
+    Timer*m_timer{NULL};
 };
 
 
