@@ -1,10 +1,13 @@
 #ifndef HL_NET_TCP_TCP_BUFFER_H
 #define HL_NET_TCP_TCP_BUFFER_H
 #include<vector>
+#include<memory>
 namespace hl{
 
 class TcpBuffer{
 public:
+
+typedef std::shared_ptr<TcpBuffer>s_ptr;
 
 TcpBuffer(int size);
 
@@ -34,8 +37,9 @@ private:
 int m_read_index;
 int m_write_index;
 int m_size{0};
-
+public:
 std::vector<char> m_buffer;
+
 
 };
 

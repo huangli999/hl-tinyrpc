@@ -1,6 +1,8 @@
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_server.h"
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 #include"/home/hl/hl-tinyrpc/hl/net/fd_event.h"
+#include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
+
 namespace hl
 {
     TcpServer::TcpServer(NetAddr::s_ptr local_addr):m_local_addr(local_addr){
@@ -29,13 +31,21 @@ namespace hl
     }
 
     void TcpServer::onAccept(){
-        int client_fd=m_acceptor->accept();
+        auto re=m_acceptor->accept();
+        int client_fd=re.first;
+        NetAddr::s_ptr peer_addr=re.second;
 
         FdEvent client_fd_event(client_fd);
         m_client_counts++;
 
         //把clientfd添加到任意的IO线程
         // m_io_thread_group->getIOThread()->getEventLoop()->addEpollEvent();
+        IOThread*io_thread=m_io_thread_group->getIOThread();
+        TcpConnection::s_ptr connection=std::make_shared<TcpConnection>(io_thread,client_fd,128,peer_addr);
+        connection->setState(Connected);
+        
+        m_client.insert(connection);
+       
         DEBUGLOG("TcpServer succ get client,fd=%d",client_fd);
     }
 

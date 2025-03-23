@@ -19,6 +19,7 @@
     if(rt==-1){\
         ERRORLOG("failed epoll_ctl when add fd,errno=%d,error info=%s",errno,strerror(errno));\
     }\
+    m_listen_fds.insert(event->getFd());\
     DEBUGLOG("succ add event fd,fd{%d}",event->getFd());\
 
 #define DEL_TO_EPOLL() \
@@ -34,6 +35,7 @@ if(rt==-1)\
 {\
     ERRORLOG("failed epoll_ctl when del fd,errno=%d,error info=%s",errno,strerror(errno));\
 }\
+m_listen_fds.erase(event->getFd());\
 DEBUGLOG("succ del event fd,fd{%d}",event->getFd());\
 
 namespace hl{

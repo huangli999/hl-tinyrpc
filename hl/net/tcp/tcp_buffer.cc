@@ -33,12 +33,12 @@ return m_write_index;
 /// @param buf 写入的buf
 /// @param size 写入的大小
 void TcpBuffer::writeToBuffer(const char*buf,int size){
-if(size>writeAble()){
-    int newSize=(int)(1.5*(m_write_index+size));
-    resizeBuffer(newSize);
-}
+    if(size>writeAble()){
+        int newSize=(int)(1.5*(m_write_index+size));
+        resizeBuffer(newSize);
+    }
     memcpy(&m_buffer[m_write_index],buf,size);
-
+    m_write_index+=size;
 }
 
 /// @brief 

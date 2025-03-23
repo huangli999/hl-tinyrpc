@@ -4,6 +4,9 @@
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/net_addr.h"
 #include"/home/hl/hl-tinyrpc/hl/net/eventloop.h"
 #include"/home/hl/hl-tinyrpc/hl/net/io_thread_group.h"
+#include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
+#include<set>
+
 namespace hl
 {
 class TcpServer{
@@ -34,6 +37,7 @@ FdEvent*m_listen_fd_event;
 
 int m_client_counts{0};//客户端吧连接数量
 
+std::set<TcpConnection::s_ptr>m_client;
 };
 } // namespace hl
 

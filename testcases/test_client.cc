@@ -8,15 +8,15 @@
 #include <string>
 #include <memory>
 #include <unistd.h>
-#include "rocket/common/log.h"
-#include "rocket/common/config.h"
-#include "rocket/common/log.h"
-#include "rocket/net/tcp/tcp_client.h"
-#include "rocket/net/tcp/net_addr.h"
-#include "rocket/net/coder/string_coder.h"
-#include "rocket/net/coder/abstract_protocol.h"
-#include "rocket/net/coder/tinypb_coder.h"
-#include "rocket/net/coder/tinypb_protocol.h"
+#include "hl/common/log.h"
+#include "hl/common/config.h"
+#include "hl/common/log.h"
+// #include "hl/net/tcp/tcp_client.h"
+#include "hl/net/tcp/net_addr.h"
+// #include "hl/net/coder/string_coder.h"
+// #include "hl/net/coder/abstract_protocol.h"
+// #include "hl/net/coder/tinypb_coder.h"
+// #include "hl/net/coder/tinypb_protocol.h"
 
 void test_connect() {
 
@@ -39,9 +39,9 @@ void test_connect() {
 
   int rt = connect(fd, reinterpret_cast<sockaddr*>(&server_addr), sizeof(server_addr));
 
-  DEBUGLOG("connect success");
+  DEBUGLOG("connect success",NULL);
 
-  std::string msg = "hello rocket!";
+  std::string msg = "hello hl!";
   
   rt = write(fd, msg.c_str(), msg.length());
 
@@ -53,35 +53,34 @@ void test_connect() {
 
 }
 
-void test_tcp_client() {
+// void test_tcp_client() {
 
-  rocket::IPNetAddr::s_ptr addr = std::make_shared<rocket::IPNetAddr>("127.0.0.1", 12346);
-  rocket::TcpClient client(addr);
-  client.connect([addr, &client]() {
-    DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
-    std::shared_ptr<rocket::TinyPBProtocol> message = std::make_shared<rocket::TinyPBProtocol>();
-    message->m_msg_id = "123456789";
-    message->m_pb_data = "test pb data";
-    client.writeMessage(message, [](rocket::AbstractProtocol::s_ptr msg_ptr) {
-      DEBUGLOG("send message success");
-    });
+//   hl::IPNetAddr::s_ptr addr = std::make_shared<hl::IPNetAddr>("127.0.0.1", 12346);
+//   hl::TcpClient client(addr);
+//   client.connect([addr, &client]() {
+//     DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
+//     std::shared_ptr<hl::TinyPBProtocol> message = std::make_shared<hl::TinyPBProtocol>();
+//     message->m_msg_id = "123456789";
+//     message->m_pb_data = "test pb data";
+//     client.writeMessage(message, [](hl::AbstractProtocol::s_ptr msg_ptr) {
+//       DEBUGLOG("send message success");
+//     });
 
-    client.readMessage("123456789", [](rocket::AbstractProtocol::s_ptr msg_ptr) {
-      std::shared_ptr<rocket::TinyPBProtocol> message = std::dynamic_pointer_cast<rocket::TinyPBProtocol>(msg_ptr);
-      DEBUGLOG("msg_id[%s], get response %s", message->m_msg_id.c_str(), message->m_pb_data.c_str());
-    });
-  });
-}
+//     client.readMessage("123456789", [](hl::AbstractProtocol::s_ptr msg_ptr) {
+//       std::shared_ptr<hl::TinyPBProtocol> message = std::dynamic_pointer_cast<hl::TinyPBProtocol>(msg_ptr);
+//       DEBUGLOG("msg_id[%s], get response %s", message->m_msg_id.c_str(), message->m_pb_data.c_str());
+//     });
+//   });
+// }
 
 int main() {
 
-  rocket::Config::SetGlobalConfig(NULL);
+  hl::Config::SetGlobalConfig("/home/hl/hl-tinyrpc/conf/hl.xml");
+  hl::Logger::InitGlobalLogger();
 
-  rocket::Logger::InitGlobalLogger(0);
+  test_connect();
 
-  // test_connect();
-
-  test_tcp_client();
+  // test_tcp_client();
 
   return 0;
 }

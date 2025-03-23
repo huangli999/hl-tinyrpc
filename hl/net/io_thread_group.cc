@@ -3,8 +3,8 @@
 namespace hl
 {
 IOThreadGroup::IOThreadGroup(int size):m_size(size){
-    m_io_thread_groups.resize(size);
-    for(int i=0;i<size;++i){
+    m_io_thread_groups.resize(m_size);
+    for(int i=0;i<m_size;++i){
         m_io_thread_groups[i]=new IOThread();
 
     }

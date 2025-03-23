@@ -2,6 +2,7 @@
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 #include"/home/hl/hl-tinyrpc/hl/net/fd_event.h"
 #include<string.h>
+#include<fcntl.h>
 
 namespace hl{
 
@@ -34,4 +35,21 @@ namespace hl{
         m_listen_event.data.ptr=this;
     }
 
+    void FdEvent::setNonBlock(){
+        int flag=fcntl(m_fd,F_GETFL,0);
+        if(flag&O_NONBLOCK){
+            return;
+        }
+
+        fcntl(m_fd,F_SETFL,flag|O_NONBLOCK);
+    }
+
+    void FdEvent::cancle(TriggerEvent event_type){
+        if(event_type==TriggerEvent::IN_EVENT)
+        {
+            m_listen_event.events&=(~EPOLLIN);
+        }else{
+            m_listen_event.events&=(~EPOLLOUT);
+        }
+    }
 }
