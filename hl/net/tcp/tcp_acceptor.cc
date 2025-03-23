@@ -10,7 +10,7 @@ namespace hl{
 
 
     TcpAcceptor::TcpAcceptor(NetAddr::s_ptr local_addr):m_local_addr(local_addr){
-        if(local_addr->checkVaild()){
+        if(!local_addr->checkVaild()){
             ERRORLOG("invalid local addr%s",local_addr->toString().c_str());
             exit(0);
         }
@@ -50,6 +50,14 @@ namespace hl{
     }
 
     TcpAcceptor::~TcpAcceptor(){
+       
+    }
+
+    /// @brief 获取监听的fd
+    /// @return 
+    int TcpAcceptor::getListenFd(){
+
+        return m_listenfd;
 
     }
 

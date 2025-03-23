@@ -39,6 +39,12 @@ public:
     void initTimer();//初始化定时器
 
     void addTimeEvent(TimerEvent::s_ptr event);
+
+public:
+
+static EventLoop*GetCurrentEventLoop();
+
+
 private:
     pid_t m_thread_id{0};
 
