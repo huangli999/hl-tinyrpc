@@ -1,19 +1,9 @@
 
 ## 1.总览
-rocket 是基于 C++11 开发的一款多线程的异步 RPC 框架，它旨在高效、简洁的同时，又保持至极高的性能。
+hl-rpc 是基于 C++11 开发的一款多线程的异步 RPC 框架，它旨在高效、简洁的同时，又保持至极高的性能。
 
-rocket 同样是基于主从 Reactor 架构，底层采用 epoll 实现 IO 多路复用。应用层则基于 protobuf 自定义 rpc 通信协议，同时也将支持简单的 HTTP 协议。
+hl-rpc 同样是基于主从 Reactor 架构，底层采用 epoll 实现 IO 多路复用。应用层则基于 protobuf 自定义 rpc 通信协议，同时也将支持简单的 HTTP 协议。
 
-
-
-
-
-### 1.1 技术栈关键词
-- c++11
-- protobuf
-- rpc
-- reactor
-- http
 
 
 ### 1.2项目大纲
@@ -403,26 +393,6 @@ xmltest.o: tinyxml.h tinystr.h
 tinyxmlerror.o: tinyxml.h tinystr.h
 ```
 
-## 4. multiple definition of __TMC_END__
-编译时出现以下多重定义错误
-![](./imgs/multiple_definition.jpg)
-
-处理方法同问题3，重新安装 libtinyxml.a 即可
-
-
-## 5. testcases/order.pb.cc: No such file or directory
-```
--Wno-unused-but-set-variable -I./ -Irocket  -Irocket/common -Irocket/net -Irocket/net/tcp -Irocket/net/coder -Irocket/net/rpc testcases/test_rpc_client.cc testcases/order.pb.cc -o bin/test_rpc_client lib/librocket.a /usr/lib/libprotobuf.a    /usr/lib/libtinyxml.a -ldl -pthread
-g++: error: testcases/order.pb.cc: No such file or directory
-make: *** [makefile:71: bin/test_rpc_client] Error 1
-make: *** Waiting for unfinished jobs....
-```
-出现此错误时，是因为本地没有用 `protoc` 命令生成文件，需要执行：
-```
-cd testcases
-protoc --cpp_out=./ order.proto
-```
-观察是否在当前目录生成了 `order.pb.h` 和 `order.pb.cc` 两个文件，生成成功后重新编译
 
 ## 6. 重要! 目录层次结构
 **请一定保持一样的目录结构，最外层的文件夹命名可以任意.**
