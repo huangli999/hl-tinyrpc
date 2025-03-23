@@ -15,6 +15,7 @@
 #include"/home/hl/hl-tinyrpc/hl/net/eventloop.h"
 #include"/home/hl/hl-tinyrpc/hl/net/timer_event.h"
 #include"/home/hl/hl-tinyrpc/hl/net/io_thread.h"
+#include"/home/hl/hl-tinyrpc/hl/net/io_thread_group.h"
 void test_io_thread(){
 
   int listenfd=socket(AF_INET,SOCK_STREAM,0);
@@ -58,13 +59,18 @@ void test_io_thread(){
   hl::TimerEvent::s_ptr time_event=std::make_shared<hl::TimerEvent>(1000,true,[&i](){
     INFOLOG("trigger timer event,count-%d",i++);
   });
+  
+  hl::IOThreadGroup io_thread_group(2);
+  hl::IOThread*io_thread=io_thread_group.getIOThread();
+  io_thread->getEventLoop()->addEpollEvent(&event);
+  io_thread->getEventLoop()->addTimeEvent(time_event);
 
-  hl::IOThread io_thread;
+  hl::IOThread*io_thread2=io_thread_group.getIOThread();
+  io_thread2->getEventLoop()->addTimeEvent(time_event);
 
-  io_thread.getEventLoop()->addEpollEvent(&event);
-  io_thread.getEventLoop()->addTimeEvent(time_event);
-  io_thread.start();
-  io_thread.join();
+  io_thread_group.start();
+  io_thread_group.join();
+
 
 
 }
