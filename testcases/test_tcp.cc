@@ -1,29 +1,28 @@
 #include <memory>
-#include "rocket/common/log.h"
-#include "rocket/net/tcp/net_addr.h"
-#include "rocket/net/tcp/tcp_server.h"
+#include "hl/common/log.h"
+#include "hl/net/tcp/net_addr.h"
+#include"/home/hl/hl-tinyrpc/hl/common/config.h"
 
-void test_tcp_server() {
+// void test_tcp_server() {
 
-  rocket::IPNetAddr::s_ptr addr = std::make_shared<rocket::IPNetAddr>("127.0.0.1", 12346);
+//   hl::IPNetAddr::s_ptr addr = std::make_shared<hl::IPNetAddr>("127.0.0.1", 12346);
 
-  DEBUGLOG("create addr %s", addr->toString().c_str());
+//   DEBUGLOG("create addr %s", addr->toString().c_str());
 
-  rocket::TcpServer tcp_server(addr);
+//   hl::TcpServer tcp_server(addr);
 
-  tcp_server.start();
+//   tcp_server.start();
 
-}
+// }
 
 int main() {
 
-  // rocket::Config::SetGlobalConfig("../conf/rocket.xml");
-  // rocket::Logger::InitGlobalLogger();
+  // hl::Config::SetGlobalConfig("../conf/hl.xml");
+  // hl::Logger::InitGlobalLogger();
 
-  rocket::Config::SetGlobalConfig(NULL);
+  hl::Config::SetGlobalConfig("/home/hl/hl-tinyrpc/conf/hl.xml");
+  hl::Logger::InitGlobalLogger();
 
-  rocket::Logger::InitGlobalLogger(0);
-
-  test_tcp_server();
-  
+  hl::IPNetAddr addr("127.0.0.1",12346);
+  DEBUGLOG("create addr %s",addr.toString().c_str());
 }
