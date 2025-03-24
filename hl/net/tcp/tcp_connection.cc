@@ -12,11 +12,13 @@ namespace hl{
     /// @param peer_addr 
     TcpConnection::TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr)
     :m_event_loop(eventloop),m_peer_addr(peer_addr),m_state(NotConnected),m_fd(fd){
+       
         m_in_buffer=std::make_shared<TcpBuffer>(buffer_size);
         m_out_buffer=std::make_shared<TcpBuffer>(buffer_size);
 
-        m_fd_event=FdEventGroup::GetFdEventGroup()->getFdEvent(m_fd);
+        m_fd_event=FdEventGroup::GetFdEventGroup()->getFdEvent(fd);
         m_fd_event->setNonBlock();
+
         m_fd_event->listen(FdEvent::IN_EVENT,std::bind(&TcpConnection::onRead,this));
 
         m_event_loop->addEpollEvent(m_fd_event);
@@ -61,6 +63,7 @@ namespace hl{
                 }
             }else if(rt==0){
                 is_close=true;
+                DEBUGLOG("succ is_cose",NULL);
                 break;
             }else if(rt==-1&&errno == EAGAIN){
                 is_read_all=true;

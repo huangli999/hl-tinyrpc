@@ -14,7 +14,7 @@ namespace hl
     }
 
     int TcpBuffer::readAble(){
-    return m_write_index-m_write_index;
+    return m_write_index-m_read_index;
     }
 
     int TcpBuffer::writeAble(){
