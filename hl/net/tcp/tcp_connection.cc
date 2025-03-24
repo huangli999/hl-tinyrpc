@@ -3,6 +3,9 @@
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 #include<string.h>
 #include<unistd.h>
+#include"/home/hl/hl-tinyrpc/hl/net/abstract_coder.h"
+#include"/home/hl/hl-tinyrpc/hl/net/string_coder.h"
+
 namespace hl{
 
     /// @brief 
@@ -10,8 +13,8 @@ namespace hl{
     /// @param fd 
     /// @param buffer_size 
     /// @param peer_addr 
-    TcpConnection::TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr)
-    :m_event_loop(eventloop),m_peer_addr(peer_addr),m_state(NotConnected),m_fd(fd){
+    TcpConnection::TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr,TcpConnectionType type)
+    :m_event_loop(eventloop),m_peer_addr(peer_addr),m_state(NotConnected),m_fd(fd),m_connection_type(type){
        
         m_in_buffer=std::make_shared<TcpBuffer>(buffer_size);
         m_out_buffer=std::make_shared<TcpBuffer>(buffer_size);
@@ -19,13 +22,20 @@ namespace hl{
         m_fd_event=FdEventGroup::GetFdEventGroup()->getFdEvent(fd);
         m_fd_event->setNonBlock();
 
-        m_fd_event->listen(FdEvent::IN_EVENT,std::bind(&TcpConnection::onRead,this));
+        if(m_connection_type==TcpConnectionByServer){
+            listenRead();
+        }
+       
 
-        m_event_loop->addEpollEvent(m_fd_event);
+        m_coder=new StringCoder();
+
     }
 
     TcpConnection::~TcpConnection(){
-
+        if(m_coder){
+            delete m_coder;
+            m_coder=NULL;
+        }
     }
 
     void TcpConnection::setState(const TcpState state){
@@ -115,6 +125,7 @@ namespace hl{
 
     /// @brief 
     void TcpConnection::excute(){
+        if(m_connection_type==TcpConnectionByServer){
         //将RPC请求执行业务逻辑，获取RPC响应,再把RPC响应发送回去
         std::vector<char>tmp;
         int size=m_in_buffer->readAble();
@@ -130,9 +141,24 @@ namespace hl{
 
         m_out_buffer->writeToBuffer(msg.c_str(),msg.length());
 
-        m_fd_event->listen(FdEvent::OUT_EVENT,std::bind(&TcpConnection::onWrite,this));
+        listenWrite();
+        }else{
 
-        m_event_loop->addEpollEvent(m_fd_event);
+            std::vector<AbstractProtocol::s_ptr>result;
+            m_coder->decode(result,m_in_buffer);
+            for(size_t i=0;i<result.size();++i){
+                std::string req_id=result[i]->getReqId();
+                auto it=m_read_dones.find(req_id);
+                if(it!=m_read_dones.end()){
+                    it->second(result[i]);
+                }
+            }
+
+        }
+
+
+
+
     }
 
 
@@ -141,7 +167,16 @@ namespace hl{
         if(m_state!=Connected){
             ERRORLOG("client has already disconnected ,clientfd%d,addr[%s]",m_fd,m_peer_addr->toString().c_str());
         }
+        if(m_connection_type==TcpConnectionByClient){
+            //1，将message对象encode得到字节流
+            //将数据写入buffer,然后全部发送
+            std::vector<AbstractProtocol::s_ptr>message;
 
+            for(size_t i=0;i<m_write_dones.size();++i){
+                message.push_back(m_write_dones[i].first);
+            }
+            m_coder->encode(message,m_out_buffer);
+        }
         bool is_all_write=false;
         while(true){
             if(m_out_buffer->readAble()==0){
@@ -170,11 +205,38 @@ namespace hl{
             m_event_loop->addEpollEvent(m_fd_event);
         }
 
-
+        if(m_connection_type==TcpConnectionByClient){
+            for(size_t i=0;i<m_write_dones.size();++i){
+                m_write_dones[i].second(m_write_dones[i].first);
+            }
+            m_write_dones.clear();
+        }
+        
     }
 
 
     void TcpConnection::setConnectionType(TcpConnectionType type){
         m_connection_type=type;
+    }
+
+    void TcpConnection::listenWrite(){
+        
+        m_fd_event->listen(FdEvent::OUT_EVENT,std::bind(&TcpConnection::onWrite,this));
+
+        m_event_loop->addEpollEvent(m_fd_event);
+    }
+
+    void TcpConnection::listenRead(){
+        m_fd_event->listen(FdEvent::IN_EVENT,std::bind(&TcpConnection::onRead,this));
+
+        m_event_loop->addEpollEvent(m_fd_event);
+    }
+
+    void TcpConnection::pushSendMessage(AbstractProtocol::s_ptr message,std::function<void(AbstractProtocol::s_ptr)>done){
+        m_write_dones.push_back(std::make_pair(message,done));
+    }
+
+    void TcpConnection::pushReadMessage(const std::string&req_id,std::function<void(AbstractProtocol::s_ptr)> done){
+        m_read_dones.insert(std::make_pair(req_id,done));
     }
 }

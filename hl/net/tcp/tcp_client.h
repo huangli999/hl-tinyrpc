@@ -23,7 +23,7 @@ void writeMessage(AbstractProtocol::s_ptr request,std::function<void(AbstractPro
 
 //异步的读取Message
 //如果读取成功，会调用done函数
-void readMessage(AbstractProtocol::s_ptr request,std::function<void(AbstractProtocol::s_ptr)>done);
+void readMessage(const std::string &req_id,std::function<void(AbstractProtocol::s_ptr)>done);
 
 
 
