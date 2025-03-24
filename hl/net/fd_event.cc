@@ -9,11 +9,16 @@ namespace hl{
     FdEvent::FdEvent(){
         memset(&m_listen_event,0,sizeof(m_listen_event));
     }
-    
+    FdEvent::FdEvent(int fd):m_fd(fd){
+        memset(&m_listen_event,0,sizeof(m_listen_event));
+    }
     FdEvent::~FdEvent(){
 
     }
 
+    /// @brief 将传入的事件处理为回调函数
+    /// @param event_type 
+    /// @return 
     std::function<void()>  FdEvent::handle(TriggerEvent event_type){
         if(event_type==TriggerEvent::IN_EVENT){
             return m_read_callback;
@@ -23,6 +28,9 @@ namespace hl{
         }
     }
 
+    /// @brief 
+    /// @param event_type 
+    /// @param callback 
     void FdEvent::listen(TriggerEvent event_type,std::function<void()>callback){
         if(event_type==TriggerEvent::IN_EVENT)
         {
@@ -35,6 +43,7 @@ namespace hl{
         m_listen_event.data.ptr=this;
     }
 
+    /// @brief 设置为非阻塞
     void FdEvent::setNonBlock(){
         int flag=fcntl(m_fd,F_GETFL,0);
         if(flag&O_NONBLOCK){
@@ -44,6 +53,8 @@ namespace hl{
         fcntl(m_fd,F_SETFL,flag|O_NONBLOCK);
     }
 
+    /// @brief 取消事件
+    /// @param event_type 
     void FdEvent::cancle(TriggerEvent event_type){
         if(event_type==TriggerEvent::IN_EVENT)
         {

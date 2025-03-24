@@ -33,7 +33,7 @@ std::string formatString(const char* str, Args&&... args) {
 #define DEBUGLOG(str,...) \
     if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Debug)\
     {\
-    hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Debug))->toString()+"["\
+    hl::Logger::GetGlobalLogger()->pushLog((hl::LogEvent(hl::LogLevel::Debug)).toString()+"["\
     +std::string(__FILE__)+":"+std::to_string(__LINE__)+"]\t"+hl::formatString(str,##__VA_ARGS__));\
     hl::Logger::GetGlobalLogger()->log();\
     }\
@@ -41,7 +41,7 @@ std::string formatString(const char* str, Args&&... args) {
 #define INFOLOG(str,...) \
 if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Info)\
 {\
-hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Info))->toString()\
+hl::Logger::GetGlobalLogger()->pushLog((hl::LogEvent(hl::LogLevel::Info)).toString()\
 +"["+std::string(__FILE__)+":"+std::to_string(__LINE__)+"]\t"+hl::formatString(str,##__VA_ARGS__));\
 hl::Logger::GetGlobalLogger()->log();\
 }\
@@ -49,7 +49,7 @@ hl::Logger::GetGlobalLogger()->log();\
 #define ERRORLOG(str,...) \
 if(hl::Logger::GetGlobalLogger()->getLogLevel()<=hl::Error)\
 {\
-hl::Logger::GetGlobalLogger()->pushLog((new hl::LogEvent(hl::LogLevel::Error))->toString()\
+hl::Logger::GetGlobalLogger()->pushLog((hl::LogEvent(hl::LogLevel::Error)).toString()\
 +"["+std::string(__FILE__)+":"+std::to_string(__LINE__)+"]\t"+hl::formatString(str,##__VA_ARGS__));\
 hl::Logger::GetGlobalLogger()->log();\
 }\

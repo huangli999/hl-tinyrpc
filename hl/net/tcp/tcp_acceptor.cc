@@ -8,7 +8,8 @@
 
 namespace hl{
 
-
+    /// @brief 
+    /// @param local_addr 
     TcpAcceptor::TcpAcceptor(NetAddr::s_ptr local_addr):m_local_addr(local_addr){
         if(!local_addr->checkVaild()){
             ERRORLOG("invalid local addr%s",local_addr->toString().c_str());
@@ -16,7 +17,7 @@ namespace hl{
         }
 
 
-        m_family=m_local_addr->setFamily();
+        m_family=m_local_addr->getFamily();
 
         m_listenfd=socket(m_family,SOCK_STREAM,0);
 
@@ -43,10 +44,6 @@ namespace hl{
             ERRORLOG("listen  error,errno=%d,error=%s",errno,strerror(errno));
             exit(0);
         }
-
-
-
-
     }
 
     TcpAcceptor::~TcpAcceptor(){
@@ -61,6 +58,8 @@ namespace hl{
 
     }
 
+    /// @brief 
+    /// @return 返回监听的客户端fd，和地址
     std::pair<int,NetAddr::s_ptr> TcpAcceptor::accept(){
         if(m_family==AF_INET){
             sockaddr_in client_addr;

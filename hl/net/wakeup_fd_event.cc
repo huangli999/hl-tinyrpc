@@ -12,7 +12,7 @@ namespace hl
 
     }
 
-
+    /// @brief 读取八个字节来触发epoll
     void WakeUpFdEvent::wakeup(){
         char buf[8]={'a'};
 
@@ -21,5 +21,6 @@ namespace hl
         {
             ERRORLOG("write to wakeup fd less than 8 bytes,fd[%d]",m_fd);
         }
+        DEBUGLOG("success read 8 bytes",NULL);
     }
 } // namespace hl

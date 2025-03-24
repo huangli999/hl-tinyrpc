@@ -17,6 +17,8 @@ int64_t getArriveTime()const{
     return m_arrive_time;
 }
 
+/// @brief 设置为关闭连接
+/// @param value 
 void setCancle(bool value){
     m_is_cancled=value;
 }

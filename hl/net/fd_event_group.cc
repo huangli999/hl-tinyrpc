@@ -5,6 +5,8 @@ namespace hl{
 
     static FdEventGroup*g_fd_event_group=NULL;
 
+    /// @brief 初始化事件
+    /// @param size 
     FdEventGroup::FdEventGroup(int size):m_size(size){
         for(int i=0;i<m_size;++i){
             m_fd_group.push_back(new FdEvent(i));
@@ -20,6 +22,8 @@ namespace hl{
         }
     }
 
+    /// @brief 获得事件组的对象
+    /// @return 
     FdEventGroup*FdEventGroup::GetFdEventGroup(){
         if(g_fd_event_group!=NULL){
             return g_fd_event_group;
@@ -28,6 +32,9 @@ namespace hl{
         return g_fd_event_group;
     }
 
+    /// @brief 获得指定文件描述符事件
+    /// @param fd 
+    /// @return 
     FdEvent*FdEventGroup::getFdEvent(int fd){
         ScopeMutex<Mutex>lock(m_mutex);
         if(fd<(int)m_fd_group.size()){

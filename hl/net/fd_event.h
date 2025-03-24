@@ -11,7 +11,7 @@ enum TriggerEvent{
     OUT_EVENT=EPOLLOUT,
 };
     FdEvent();
-    FdEvent(int fd):m_fd(fd){}
+    FdEvent(int fd);
     
     ~FdEvent();
 
@@ -23,7 +23,7 @@ enum TriggerEvent{
 
     //取消监听
     void cancle(TriggerEvent event_type);
-    
+
     int getFd()const{
         return m_fd;
     }

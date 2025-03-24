@@ -5,6 +5,7 @@
 #include<string.h>
 namespace hl{
 
+    /// @brief 初始化时间
     Timer::Timer():FdEvent(){
         m_fd=timerfd_create(CLOCK_MONOTONIC,TFD_NONBLOCK|TFD_CLOEXEC);
 
@@ -17,6 +18,8 @@ namespace hl{
 
     }
 
+    /// @brief 添加定时任务，确认是否需要重置定时
+    /// @param event 
     void Timer::addTimerEvent(TimerEvent::s_ptr event){
         bool is_reset_timerfd=false;
         ScopeMutex<Mutex>lock(m_mutex);
@@ -36,7 +39,11 @@ namespace hl{
         }
     }
 
+    /// @brief 删除指定的定时事件
+    /// @param event 
     void Timer::deleteTimerEvent(TimerEvent::s_ptr event){
+        //确定为关闭连接
+        //遍历定时队列，找到要删除的事件
         event->setCancle(true);
 
         ScopeMutex<Mutex>lock(m_mutex);
@@ -60,8 +67,11 @@ namespace hl{
         DEBUGLOG("succ delete TimerEvent at arrive time %lld",event->getArriveTime());
     }
 
+    /// @brief 触发IO事件，EVENTLOOP执行的函数
     void Timer::onTimer(){
         //处理缓冲区数据，防止下一次继续触发可读事件
+        //执行定时任务
+
         char buf[8];
         while(1){
             if(read(m_fd,buf,8)==-1&&errno==EAGAIN){
@@ -71,7 +81,7 @@ namespace hl{
         //执行定时任务
         int64_t now=getNowMs();//获取当前时间戳
         std::vector<TimerEvent::s_ptr>tmps;//定时器数组
-        std::vector<std::pair<int64_t,std::function<void()>>>tasks;//定时器数组
+        std::vector<std::pair<int64_t,std::function<void()>>>tasks;//定时器数组,包含时间戳和回调函数
         ScopeMutex<Mutex>lock(m_mutex);
         auto it=m_pending_events.begin();
         for(it=m_pending_events.begin();it!=m_pending_events.end();++it){
@@ -97,6 +107,7 @@ namespace hl{
         }
 
         resetArriveTime();
+
         for(auto i:tasks){
             if(i.second){
                 i.second();
@@ -104,6 +115,8 @@ namespace hl{
         }
     }
 
+    /// @brief 重置最小超时时间
+    
     void Timer::resetArriveTime(){
         ScopeMutex<Mutex>lock(m_mutex);
         auto tmp=m_pending_events;

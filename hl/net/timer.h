@@ -23,6 +23,7 @@ private:
 void resetArriveTime();
 
 std::multimap<int64_t,TimerEvent::s_ptr>m_pending_events;
+
 Mutex m_mutex;
 
 };

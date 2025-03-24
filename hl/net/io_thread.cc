@@ -6,8 +6,9 @@
 namespace hl{
 
 /// @brief 创建新线程
+///使用信号量确保同步
 IOThread::IOThread(){
-
+    
     int rt=sem_init(&m_init_semaphore,0,0);
 
     assert(rt==0);
@@ -51,6 +52,7 @@ void*IOThread::Main(void*arg){
     //让IO线程等待直到我们唤醒
     sem_wait(&thread->m_start_semaphore);
     DEBUGLOG("IOthread %d start loop",thread->m_thread_id);
+    //线程开启loop循环
     thread->m_event_loop->loop();
 
     return NULL;
@@ -62,6 +64,7 @@ EventLoop*IOThread::getEventLoop(){
     return m_event_loop;
 }
 
+/// @brief 唤醒创建的线程
 void IOThread::start(){
     sem_post(&m_start_semaphore);
 }

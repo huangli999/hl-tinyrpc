@@ -16,7 +16,7 @@ virtual sockaddr*getSockAddr()=0;
 
 virtual socklen_t getSockLen()=0;
 
-virtual int setFamily()=0;
+virtual int getFamily()=0;
 
 virtual std::string toString()=0;
 
@@ -41,7 +41,7 @@ sockaddr*getSockAddr();
 
 socklen_t getSockLen();
 
-int setFamily();
+int getFamily();
 
 std::string toString();
 

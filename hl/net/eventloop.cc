@@ -6,7 +6,8 @@
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 #include<string.h>
 
-
+///添加到epoll中
+//先检查是否已添加，使用set
 #define ADD_TO_EPOLL()  \
     auto it=m_listen_fds.find(event->getFd());\
     int op=EPOLL_CTL_ADD;\
@@ -23,20 +24,20 @@
     DEBUGLOG("succ add event fd,fd{%d}",event->getFd());\
 
 #define DEL_TO_EPOLL() \
-auto it=m_listen_fds.find(event->getFd());\
-if(it==m_listen_fds.end())\
-{\
-    return;\
-}\
-int op=EPOLL_CTL_DEL;\
-epoll_event tmp=event->getEpollEvent();\
-int rt=epoll_ctl(m_epoll_fd,op,event->getFd(),&tmp);\
-if(rt==-1)\
-{\
-    ERRORLOG("failed epoll_ctl when del fd,errno=%d,error info=%s",errno,strerror(errno));\
-}\
-m_listen_fds.erase(event->getFd());\
-DEBUGLOG("succ del event fd,fd{%d}",event->getFd());\
+    auto it=m_listen_fds.find(event->getFd());\
+    if(it==m_listen_fds.end())\
+    {\
+        return;\
+    }\
+    int op=EPOLL_CTL_DEL;\
+    epoll_event tmp=event->getEpollEvent();\
+    int rt=epoll_ctl(m_epoll_fd,op,event->getFd(),&tmp);\
+    if(rt==-1)\
+    {\
+        ERRORLOG("failed epoll_ctl when del fd,errno=%d,error info=%s",errno,strerror(errno));\
+    }\
+    m_listen_fds.erase(event->getFd());\
+    DEBUGLOG("succ del event fd,fd{%d}",event->getFd());\
 
 namespace hl{
 
@@ -71,6 +72,7 @@ namespace hl{
         t_current_eventloop=this;
     }
 
+    /// @brief 
     EventLoop::~EventLoop(){
         close(m_epoll_fd);
         if(m_wakeup_fd_event)
@@ -84,6 +86,8 @@ namespace hl{
             m_timer=NULL;
         }
     }
+
+
     void EventLoop::initTimer(){
         m_timer=new Timer();
         addEpollEvent(m_timer);
@@ -93,6 +97,7 @@ namespace hl{
         m_timer->addTimerEvent(event);
     }
 
+    /// @brief 初始化唤醒fd事件
     void EventLoop::initWakeUpFdEvent(){
         m_wakeup_fd=eventfd(0,EFD_NONBLOCK);
         if(m_wakeup_fd<0)
@@ -114,14 +119,18 @@ namespace hl{
 
     }
 
-    void EventLoop::loop(){
 
+    /// @brief 
+    void EventLoop::loop(){
+        
+        m_is_looping=true;
         while(!m_stop_flag)
         {
             ScopeMutex<Mutex>lock(m_mutex);
             std::queue<std::function<void()>>tmp_tasks;
             m_pending_tasks.swap(tmp_tasks);
             lock.unlock();
+            //执行具体的任务
             while(!tmp_tasks.empty())
             {
                 std::function<void()>cb=tmp_tasks.front();
@@ -139,6 +148,8 @@ namespace hl{
             int timeout=g_epoll_max_timeout;
             epoll_event result_events[g_epoll_max_events];
             // DEBUGLOG("now begin epoll_wait",NULL);
+            //将定时任务放在result_events数组中，并且监听
+            //遍历数组，当触发可读或可写事件放入任务队列中
             int rt=epoll_wait(m_epoll_fd,result_events,g_epoll_max_events,timeout);
             DEBUGLOG("now end epoll_wait,rt=%d",rt);
 
@@ -152,6 +163,7 @@ namespace hl{
                     epoll_event trigger_event=result_events[i];
                     FdEvent*fd_event=static_cast<FdEvent*>(trigger_event.data.ptr);
                     if(fd_event==NULL){
+                        ERRORLOG("fd_event = NULL, continue",NULL);
                         continue;
                     }
                     if(trigger_event.events&EPOLLIN)
@@ -170,18 +182,23 @@ namespace hl{
         }
     }
 
+    //唤醒
     void EventLoop::wakeup(){
+        INFOLOG("WAKE UP",NULL);
         m_wakeup_fd_event->wakeup();
     }
 
     void EventLoop::stop(){
-
+        m_stop_flag = true;
+        wakeup();
     }
 
     void EventLoop::dealWakeUp(){
 
     }
 
+    /// @brief 添加事件 如果是主线程则直接添加，否则生成回调函数，放入任务队列中
+    /// @param event 
     void EventLoop::addEpollEvent(FdEvent*event){
         if(isInLoopThread())
         {
@@ -212,10 +229,15 @@ namespace hl{
 
     }
 
+    /// @brief 判断当前线程是不是主线程
+    /// @return 
     bool EventLoop::isInLoopThread(){
         return getThreadId()==m_thread_id;
     }
 
+    /// @brief 将回调函数放入任务队列
+    /// @param cb 
+    /// @param is_wake_up 
     void EventLoop::addTask(std::function<void()>cb,bool is_wake_up){
         ScopeMutex<Mutex>lock(m_mutex);
         m_pending_tasks.push(cb);
@@ -235,4 +257,10 @@ namespace hl{
         return t_current_eventloop;
 
     }
+
+    bool EventLoop::isLooping(){
+        return m_is_looping;
+    }
+
+
 }

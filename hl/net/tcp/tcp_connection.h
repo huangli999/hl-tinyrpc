@@ -13,7 +13,10 @@ enum TcpState{
     HalfClosing=3,
     Closed=4,
 };
-
+enum TcpConnectionType{
+    TcpConnectionByServer=1,
+    TcpConnectionByClient=2,
+};
 class TcpConnection{
 
 public:
@@ -23,7 +26,7 @@ public:
 
 typedef std::shared_ptr<TcpConnection>s_ptr;
 
-TcpConnection(IOThread*io_thread,int fd,int buffer_size,NetAddr::s_ptr peer_addr);
+TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr);
 
 ~TcpConnection();
 
@@ -43,9 +46,10 @@ void clear();
 //服务器主动关闭连接
 void shutDown();
 
+void setConnectionType(TcpConnectionType type);
 private:
 
-IOThread*m_io_thread{NULL};//持有该连接的IO线程
+EventLoop*m_event_loop{NULL};//持有该连接的IO线程
 
 NetAddr::s_ptr m_local_addr;
 
@@ -61,6 +65,9 @@ FdEvent*m_fd_event{NULL};
 TcpState m_state;//当前状态
 
 int m_fd{0};
+
+TcpConnectionType m_connection_type{TcpConnectionByServer};
+
 };
 } // namespace hl
 

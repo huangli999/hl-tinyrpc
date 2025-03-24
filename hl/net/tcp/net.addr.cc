@@ -32,35 +32,41 @@ namespace hl{
     }
 
 
-sockaddr*IPNetAddr::getSockAddr(){
-    return reinterpret_cast<sockaddr*>(&m_addr);
-}
+    sockaddr*IPNetAddr::getSockAddr(){
+        return reinterpret_cast<sockaddr*>(&m_addr);
+    }
 
-socklen_t IPNetAddr::getSockLen(){
-    return sizeof(m_addr);
-}
+    socklen_t IPNetAddr::getSockLen(){
+        return sizeof(m_addr);
+    }
 
-int IPNetAddr::setFamily(){
-    return AF_INET;
-}
+    /// @brief 设置协议为IPV4
+    /// @return 
+    int IPNetAddr::getFamily(){
+        return AF_INET;
+    }
 
-std::string IPNetAddr::toString(){
-    std::string res;
-    res=m_ip+":"+std::to_string(m_port);
-    return res;
-}
+    /// @brief 返回ip地址和端口号的字符串
+    /// @return 
+    std::string IPNetAddr::toString(){
+        std::string res;
+        res=m_ip+":"+std::to_string(m_port);
+        return res;
+    }
     
-bool IPNetAddr::checkVaild(){
-    if(m_ip.empty()){
-        return false;
+    /// @brief 检查端口号是否有效
+    /// @return 
+    bool IPNetAddr::checkVaild(){
+        if(m_ip.empty()){
+            return false;
+        }
+        if(m_port<0||m_port>65536){
+            return false;
+        }
+        if(inet_addr(m_ip.c_str())==INADDR_NONE){
+            return false;
+        }
+        return true;
     }
-    if(m_port<0||m_port>65536){
-        return false;
-    }
-    if(inet_addr(m_ip.c_str())==INADDR_NONE){
-        return false;
-    }
-    return true;
-}
 
 }

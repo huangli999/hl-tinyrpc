@@ -11,10 +11,10 @@
 #include "hl/common/log.h"
 #include "hl/common/config.h"
 #include "hl/common/log.h"
-// #include "hl/net/tcp/tcp_client.h"
+#include "hl/net/tcp/tcp_client.h"
 #include "hl/net/tcp/net_addr.h"
 // #include "hl/net/coder/string_coder.h"
-// #include "hl/net/coder/abstract_protocol.h"
+#include "hl/net/abstract_protocol.h"
 // #include "hl/net/coder/tinypb_coder.h"
 // #include "hl/net/coder/tinypb_protocol.h"
 
@@ -53,25 +53,25 @@ void test_connect() {
 
 }
 
-// void test_tcp_client() {
+void test_tcp_client() {
 
-//   hl::IPNetAddr::s_ptr addr = std::make_shared<hl::IPNetAddr>("127.0.0.1", 12346);
-//   hl::TcpClient client(addr);
-//   client.connect([addr, &client]() {
-//     DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
-//     std::shared_ptr<hl::TinyPBProtocol> message = std::make_shared<hl::TinyPBProtocol>();
-//     message->m_msg_id = "123456789";
-//     message->m_pb_data = "test pb data";
-//     client.writeMessage(message, [](hl::AbstractProtocol::s_ptr msg_ptr) {
-//       DEBUGLOG("send message success");
-//     });
+  hl::IPNetAddr::s_ptr addr = std::make_shared<hl::IPNetAddr>("127.0.0.1", 12346);
+  hl::TcpClient client(addr);
+  client.connect([addr, &client]() {
+    DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
+    // std::shared_ptr<hl::TinyPBProtocol> message = std::make_shared<hl::TinyPBProtocol>();
+    // message->m_msg_id = "123456789";
+    // message->m_pb_data = "test pb data";
+    // client.writeMessage(message, [](hl::AbstractProtocol::s_ptr msg_ptr) {
+    //   DEBUGLOG("send message success");
+    });
 
-//     client.readMessage("123456789", [](hl::AbstractProtocol::s_ptr msg_ptr) {
-//       std::shared_ptr<hl::TinyPBProtocol> message = std::dynamic_pointer_cast<hl::TinyPBProtocol>(msg_ptr);
-//       DEBUGLOG("msg_id[%s], get response %s", message->m_msg_id.c_str(), message->m_pb_data.c_str());
-//     });
-//   });
-// }
+    // client.readMessage("123456789", [](hl::AbstractProtocol::s_ptr msg_ptr) {
+      // std::shared_ptr<hl::TinyPBProtocol> message = std::dynamic_pointer_cast<hl::TinyPBProtocol>(msg_ptr);
+      // DEBUGLOG("msg_id[%s], get response %s", message->m_msg_id.c_str(), message->m_pb_data.c_str());
+    // });
+  // });
+}
 
 int main() {
 

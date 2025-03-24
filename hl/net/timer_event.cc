@@ -9,7 +9,7 @@ namespace hl
     }
 
 
-
+    /// @brief 重设时间戳
     void TimerEvent::resetArriveTime(){
 
         m_arrive_time=getNowMs()+m_interval;  

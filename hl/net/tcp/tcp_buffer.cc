@@ -9,57 +9,57 @@ namespace hl
         m_buffer.resize(size);
     }
 
-TcpBuffer::~TcpBuffer(){
+    TcpBuffer::~TcpBuffer(){
 
-}
-
-int TcpBuffer::readAble(){
-return m_write_index-m_write_index;
-}
-
-int TcpBuffer::writeAble(){
-return m_buffer.size()-m_write_index;
-}
-
-int TcpBuffer::readIndex(){
-return m_read_index;
-}
-
-int TcpBuffer::writeIndex(){
-return m_write_index;
-}
-
-/// @brief 写入缓冲区 先判断是否需要扩容 
-/// @param buf 写入的buf
-/// @param size 写入的大小
-void TcpBuffer::writeToBuffer(const char*buf,int size){
-    if(size>writeAble()){
-        int newSize=(int)(1.5*(m_write_index+size));
-        resizeBuffer(newSize);
-    }
-    memcpy(&m_buffer[m_write_index],buf,size);
-    m_write_index+=size;
-}
-
-/// @brief 
-/// @param re 
-/// @param size 
-void TcpBuffer::readFromBuffer(std::vector<char>&re,int size){
-    if(readAble()==0){
-        return;
     }
 
-    int read_size=readAble()>size?size:readAble();
+    int TcpBuffer::readAble(){
+    return m_write_index-m_write_index;
+    }
 
-    std::vector<char>tmp(read_size);
+    int TcpBuffer::writeAble(){
+    return m_buffer.size()-m_write_index;
+    }
 
-    memcpy(&tmp[0],&m_buffer[m_read_index],read_size);
+    int TcpBuffer::readIndex(){
+    return m_read_index;
+    }
 
-    re.swap(tmp);
-    m_read_index+=read_size;
-    adjustBuffer();
+    int TcpBuffer::writeIndex(){
+    return m_write_index;
+    }
 
-}
+    /// @brief 写入缓冲区 先判断是否需要扩容 
+    /// @param buf 写入的buf
+    /// @param size 写入的大小
+    void TcpBuffer::writeToBuffer(const char*buf,int size){
+        if(size>writeAble()){
+            int newSize=(int)(1.5*(m_write_index+size));
+            resizeBuffer(newSize);
+        }
+        memcpy(&m_buffer[m_write_index],buf,size);//拷贝
+        m_write_index+=size;//移动可写的索引
+    }
+
+    /// @brief 
+    /// @param re 读取字节的数组
+    /// @param size 读取字节的大小
+    void TcpBuffer::readFromBuffer(std::vector<char>&re,int size){
+        if(readAble()==0){
+            return;
+        }
+
+        int read_size=readAble()>size?size:readAble();
+
+        std::vector<char>tmp(read_size);
+
+        memcpy(&tmp[0],&m_buffer[m_read_index],read_size);
+
+        re.swap(tmp);
+        m_read_index+=read_size;
+        adjustBuffer();
+
+    }
 
 /// @brief 回收已读取的字节
 void TcpBuffer::adjustBuffer(){
@@ -78,38 +78,38 @@ void TcpBuffer::adjustBuffer(){
 }
 
 
-/// @brief 扩容缓存区
-/// @param new_size 
-void TcpBuffer::resizeBuffer(int new_size){
-    std::vector<char>tmp(new_size);
-    int count=std::min(new_size,readAble());
-    memcpy(&tmp[0],&m_buffer[m_read_index],count);
-    m_buffer.swap(tmp);
+    /// @brief 扩容缓存区
+    /// @param new_size 
+    void TcpBuffer::resizeBuffer(int new_size){
+        std::vector<char>tmp(new_size);
+        int count=std::min(new_size,readAble());
+        memcpy(&tmp[0],&m_buffer[m_read_index],count);
+        m_buffer.swap(tmp);
 
-    m_read_index=0;
-    m_write_index=m_read_index+count;
-}
-
-/// @brief 
-/// @param size 
-void TcpBuffer::moveReadIndex(int size){
-size_t j=m_read_index+size;
-if(j>=m_buffer.size()){
-    ERRORLOG("moveReadIndex error,invail size %d,ol_read_index%d,buffer size%d",size,m_read_index,m_buffer.size());
-
-}
-m_read_index=j;
-adjustBuffer();
-}
-
-void TcpBuffer::moveWriteIndex(int size){
-    size_t j=m_write_index+size;
-    if(j>=m_buffer.size()){
-        ERRORLOG("moveReadIndex error,invail size %d,ol_read_index%d,buffer size%d",size,m_write_index,m_buffer.size());
-    
+        m_read_index=0;
+        m_write_index=m_read_index+count;
     }
-    m_write_index=j;
-    adjustBuffer();
+
+    /// @brief 
+    /// @param size 
+    void TcpBuffer::moveReadIndex(int size){
+        size_t j=m_read_index+size;
+        if(j>=m_buffer.size()){
+            ERRORLOG("moveReadIndex error,invail size %d,ol_read_index%d,buffer size%d",size,m_read_index,m_buffer.size());
+
+        }
+        m_read_index=j;
+        adjustBuffer();
+    }
+
+    void TcpBuffer::moveWriteIndex(int size){
+        size_t j=m_write_index+size;
+        if(j>=m_buffer.size()){
+            ERRORLOG("moveReadIndex error,invail size %d,ol_read_index%d,buffer size%d",size,m_write_index,m_buffer.size());
+        
+        }
+        m_write_index=j;
+        adjustBuffer();
     }
 
 
