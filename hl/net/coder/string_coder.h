@@ -1,7 +1,7 @@
 #ifndef HL_NET_STRING_CODER_H
 #define HL_NET_STRING_CODER_H
-#include"/home/hl/hl-tinyrpc/hl/net/abstract_coder.h"
-#include"/home/hl/hl-tinyrpc/hl/net/abstract_protocol.h"
+#include"/home/hl/hl-tinyrpc/hl/net/coder/abstract_coder.h"
+#include"/home/hl/hl-tinyrpc/hl/net/coder/abstract_protocol.h"
 namespace hl{
 
 
@@ -35,7 +35,7 @@ namespace hl{
             }
             std::shared_ptr<stringProtocol>msg=std::make_shared<stringProtocol>();
             msg->m_info=info;
-            msg->setReqId("123456789");
+            msg->m_req_id="123456789";
             out_message.push_back(msg);
 
         }
