@@ -151,6 +151,7 @@ namespace hl{
                 auto it=m_read_dones.find(req_id);
                 if(it!=m_read_dones.end()){
                     it->second(result[i]);
+                    m_read_dones.erase(it);
                 }
             }
 
