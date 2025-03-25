@@ -57,13 +57,14 @@ namespace hl
 
         re.swap(tmp);
         m_read_index+=read_size;
+
         adjustBuffer();
 
     }
 
 /// @brief 回收已读取的字节
 void TcpBuffer::adjustBuffer(){
-    if(m_read_index<(int)(m_buffer.size()/3)){
+    if(m_read_index<int(m_buffer.size()/3)){
         return;
     }
     std::vector<char>buffer(m_buffer.size());
@@ -96,7 +97,7 @@ void TcpBuffer::adjustBuffer(){
         size_t j=m_read_index+size;
         if(j>=m_buffer.size()){
             ERRORLOG("moveReadIndex error,invail size %d,ol_read_index%d,buffer size%d",size,m_read_index,m_buffer.size());
-
+            return;
         }
         m_read_index=j;
         adjustBuffer();
@@ -106,7 +107,7 @@ void TcpBuffer::adjustBuffer(){
         size_t j=m_write_index+size;
         if(j>=m_buffer.size()){
             ERRORLOG("moveReadIndex error,invail size %d,ol_read_index%d,buffer size%d",size,m_write_index,m_buffer.size());
-        
+            return;
         }
         m_write_index=j;
         adjustBuffer();

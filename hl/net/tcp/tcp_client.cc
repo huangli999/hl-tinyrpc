@@ -14,6 +14,7 @@ namespace hl
             ERRORLOG("TcpClient::TcpClient()error",NULL);
             return;
         }
+
         m_fd_event=FdEventGroup::GetFdEventGroup()->getFdEvent(m_fd);
         m_fd_event->setNonBlock();
         m_connection=std::make_shared<TcpConnection>(m_event_loop,m_fd,128,peer_addr,TcpConnectionByClient);
@@ -32,6 +33,8 @@ namespace hl
         int rt=::connect(m_fd,m_peer_addr->getSockAddr(),m_peer_addr->getSockLen());
         if(rt==0){
             DEBUGLOG("connect[%s]success",m_peer_addr->toString().c_str());
+            m_connection->setState(Connected);
+            
             if(done){
                 done();
             }
@@ -50,8 +53,7 @@ namespace hl
                         ERRORLOG("connect error,errno=%d,error=%s",errno,strerror(errno));
                     }
                     //连接完去掉可写事件监听
-                    m_fd_event->cancle(FdEvent::OUT_EVENT);
-                    m_event_loop->addEpollEvent(m_fd_event);
+                    m_event_loop->deleteEpollEvent(m_fd_event);
                     //如果连接成功，才会执行回调函数
                     if(is_connect_succ&&done){
                         
@@ -61,7 +63,7 @@ namespace hl
                 });
                 m_event_loop->addEpollEvent(m_fd_event);
                 if(!m_event_loop->isLooping()){
-                m_event_loop->loop();
+                    m_event_loop->loop();
                 }
             }else{
                 ERRORLOG("connect error,errno=%d,error=%s",errno,strerror(errno));

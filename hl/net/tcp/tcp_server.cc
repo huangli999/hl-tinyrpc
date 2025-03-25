@@ -35,7 +35,7 @@ namespace hl
         int client_fd=re.first;
         NetAddr::s_ptr peer_addr=re.second;
 
-        FdEvent client_fd_event(client_fd);
+        
         m_client_counts++;
 
         //把clientfd添加到任意的IO线程

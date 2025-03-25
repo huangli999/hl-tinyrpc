@@ -13,10 +13,10 @@
 #include "hl/common/log.h"
 #include "hl/net/tcp/tcp_client.h"
 #include "hl/net/tcp/net_addr.h"
-#include "hl/net/string_coder.h"
-#include "hl/net/abstract_protocol.h"
-// #include "hl/net/coder/tinypb_coder.h"
-// #include "hl/net/coder/tinypb_protocol.h"
+#include "hl/net/coder/string_coder.h"
+#include "hl/net/coder/abstract_protocol.h"
+#include "hl/net/coder/tinypb_coder.h"
+#include "hl/net/coder/tinypb_protocol.h"
 
 void test_connect() {
 
@@ -59,16 +59,18 @@ void test_tcp_client() {
   hl::TcpClient client(addr);
   client.connect([addr, &client]() {
     DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
-    std::shared_ptr<hl::stringProtocol> message = std::make_shared<hl::stringProtocol>();
-    message->setReqId ("123456789");
+    std::shared_ptr<hl::TinyPBProtocol> message = std::make_shared<hl::TinyPBProtocol>();
+    message->m_req_id="123456789";
+    message->m_pb_data="test pb";
+  
     // message->m_pb_data = "test pb data";
     client.writeMessage(message, [](hl::AbstractProtocol::s_ptr msg_ptr) {
       DEBUGLOG("send message success",NULL);
     });
 
     client.readMessage("123456789", [](hl::AbstractProtocol::s_ptr msg_ptr) {
-      std::shared_ptr<hl::stringProtocol> message = std::dynamic_pointer_cast<hl::stringProtocol>(msg_ptr);
-      DEBUGLOG("msg_id[%s], get response %s", message->getReqId().c_str(), message->m_info.c_str());
+      std::shared_ptr<hl::TinyPBProtocol> message = std::dynamic_pointer_cast<hl::TinyPBProtocol>(msg_ptr);
+      DEBUGLOG("msg_id[%s], get response %s", message->m_req_id.c_str(), message->m_pb_data.c_str());
     });
   });
 }
@@ -78,7 +80,7 @@ int main() {
   hl::Config::SetGlobalConfig("/home/hl/hl-tinyrpc/conf/hl.xml");
   hl::Logger::InitGlobalLogger();
 
-  test_connect();
+  // test_connect();
 
   test_tcp_client();
 

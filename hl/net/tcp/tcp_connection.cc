@@ -3,8 +3,9 @@
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
 #include<string.h>
 #include<unistd.h>
-#include"/home/hl/hl-tinyrpc/hl/net/abstract_coder.h"
-#include"/home/hl/hl-tinyrpc/hl/net/string_coder.h"
+#include"/home/hl/hl-tinyrpc/hl/net/coder/abstract_coder.h"
+#include"/home/hl/hl-tinyrpc/hl/net/coder/string_coder.h"
+#include"/home/hl/hl-tinyrpc/hl/net/coder/tinypb_coder.h"
 
 namespace hl{
 
@@ -27,7 +28,7 @@ namespace hl{
         }
        
 
-        m_coder=new StringCoder();
+        m_coder=new TinyPBCoder();
 
     }
 
@@ -127,27 +128,33 @@ namespace hl{
     void TcpConnection::excute(){
         if(m_connection_type==TcpConnectionByServer){
         //将RPC请求执行业务逻辑，获取RPC响应,再把RPC响应发送回去
-        std::vector<char>tmp;
-        int size=m_in_buffer->readAble();
-        tmp.reserve(size);
-        m_in_buffer->readFromBuffer(tmp,size);
+        // std::vector<char>tmp;
+        // int size=m_in_buffer->readAble();
+        // tmp.reserve(size);
+        // m_in_buffer->readFromBuffer(tmp,size);
+        std::vector<AbstractProtocol::s_ptr>result;
+        std::vector<AbstractProtocol::s_ptr>replay_result;
 
-        std::string msg;
-        for(size_t i=0;i<tmp.size();++i){
-            msg+=tmp[i];
+        m_coder->decode(result,m_in_buffer);
+        for(size_t i=0;i<result.size();++i){
+            //针对每一个请求，调用roc方法，获取响应message
+            //2、将响应message放入缓冲区，监听可写事件回包
+            INFOLOG("sucess get request from client[%s]",m_peer_addr->toString().c_str());
+            std::shared_ptr<TinyPBProtocol>message=std::make_shared<TinyPBProtocol>();
+            message->m_pb_data="hello";
+            message->m_req_id=result[i]->m_req_id;
+            replay_result.emplace_back(message);
         }
 
-        INFOLOG("sucess get request from client[%s]",m_peer_addr->toString().c_str());
-
-        m_out_buffer->writeToBuffer(msg.c_str(),msg.length());
-
+        m_coder->encode(replay_result,m_out_buffer);
         listenWrite();
         }else{
 
             std::vector<AbstractProtocol::s_ptr>result;
             m_coder->decode(result,m_in_buffer);
+            
             for(size_t i=0;i<result.size();++i){
-                std::string req_id=result[i]->getReqId();
+                std::string req_id=result[i]->m_req_id;
                 auto it=m_read_dones.find(req_id);
                 if(it!=m_read_dones.end()){
                     it->second(result[i]);
@@ -167,6 +174,7 @@ namespace hl{
     void TcpConnection::onWrite(){
         if(m_state!=Connected){
             ERRORLOG("client has already disconnected ,clientfd%d,addr[%s]",m_fd,m_peer_addr->toString().c_str());
+            return;
         }
         if(m_connection_type==TcpConnectionByClient){
             //1，将message对象encode得到字节流
