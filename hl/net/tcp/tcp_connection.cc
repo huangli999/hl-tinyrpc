@@ -6,7 +6,7 @@
 #include"/home/hl/hl-tinyrpc/hl/net/coder/abstract_coder.h"
 #include"/home/hl/hl-tinyrpc/hl/net/coder/string_coder.h"
 #include"/home/hl/hl-tinyrpc/hl/net/coder/tinypb_coder.h"
-
+#include"/home/hl/hl-tinyrpc/hl/net/rpc/rpc_dispatcher.h"
 namespace hl{
 
     /// @brief 
@@ -25,6 +25,7 @@ namespace hl{
 
         if(m_connection_type==TcpConnectionByServer){
             listenRead();
+            m_dispacther=std::make_shared<RpcDispatcher>();
         }
        
 
@@ -141,8 +142,9 @@ namespace hl{
             //2、将响应message放入缓冲区，监听可写事件回包
             INFOLOG("sucess get request from client[%s]",m_peer_addr->toString().c_str());
             std::shared_ptr<TinyPBProtocol>message=std::make_shared<TinyPBProtocol>();
-            message->m_pb_data="hello";
-            message->m_req_id=result[i]->m_req_id;
+            // message->m_pb_data="hello";
+            // message->m_req_id=result[i]->m_req_id;
+            m_dispacther->dispatch(result[i],message);
             replay_result.emplace_back(message);
         }
 
@@ -152,7 +154,7 @@ namespace hl{
 
             std::vector<AbstractProtocol::s_ptr>result;
             m_coder->decode(result,m_in_buffer);
-            
+
             for(size_t i=0;i<result.size();++i){
                 std::string req_id=result[i]->m_req_id;
                 auto it=m_read_dones.find(req_id);

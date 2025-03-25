@@ -7,6 +7,7 @@
 #include"/home/hl/hl-tinyrpc/hl/net/coder/abstract_coder.h"
 #include<memory>
 #include<map>
+#include"/home/hl/hl-tinyrpc/hl/net/rpc/rpc_dispatcher.h"
 namespace hl
 {
 
@@ -87,7 +88,7 @@ std::vector<std::pair<AbstractProtocol::s_ptr,std::function<void(AbstractProtoco
 
 std::map<std::string ,std::function<void(AbstractProtocol::s_ptr)>>m_read_dones;//写入的回调函数
 
-
+std::shared_ptr<RpcDispatcher>m_dispacther;
 
 AbstractCoder*m_coder{NULL};
 };
