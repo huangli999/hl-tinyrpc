@@ -35,7 +35,7 @@ namespace hl{
             }
             std::shared_ptr<stringProtocol>msg=std::make_shared<stringProtocol>();
             msg->m_info=info;
-            msg->m_req_id="123456789";
+            msg->m_msg_id="123456789";
             out_message.push_back(msg);
 
         }
