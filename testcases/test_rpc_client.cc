@@ -63,7 +63,7 @@ void test_tcp_client() {
         return;
       }
 
-      DEBUGLOG("get response success, response[%s]", response.order_id().c_str());
+      DEBUGLOG("get response success, response[%s]", response.ShortDebugString().c_str());
     });
   });
 }
