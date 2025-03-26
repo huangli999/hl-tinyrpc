@@ -22,7 +22,7 @@
 #include "hl/net/tcp/tcp_server.h"
 #include "hl/net/rpc/rpc_dispatcher.h"
 #include "hl/net/rpc/rpc_controller.h"
-// #include "hl/net/rpc/rpc_channel.h"
+#include "hl/net/rpc/rpc_channel.h"
 #include "hl/net/rpc/rpc_closure.h"
 
 #include "order.pb.h"
@@ -34,7 +34,7 @@ void test_tcp_client() {
   client.connect([addr, &client]() {
     DEBUGLOG("conenct to [%s] success", addr->toString().c_str());
     std::shared_ptr<hl::TinyPBProtocol> message = std::make_shared<hl::TinyPBProtocol>();
-    message->m_req_id = "99998888";
+    message->m_msg_id = "99998888";
     message->m_pb_data = "test pb data";
 
     makeOrderRequest request;
@@ -55,7 +55,7 @@ void test_tcp_client() {
 
     client.readMessage("99998888", [](hl::AbstractProtocol::s_ptr msg_ptr) {
       std::shared_ptr<hl::TinyPBProtocol> message = std::dynamic_pointer_cast<hl::TinyPBProtocol>(msg_ptr);
-      DEBUGLOG("msg_id[%s], get response %s", message->m_req_id.c_str(), message->m_pb_data.c_str());
+      DEBUGLOG("msg_id[%s], get response %s", message->m_msg_id.c_str(), message->m_pb_data.c_str());
       makeOrderResponse response;
 
       if(!response.ParseFromString(message->m_pb_data)) {
@@ -68,7 +68,7 @@ void test_tcp_client() {
   });
 }
 
-// void test_rpc_channel() {
+void test_rpc_channel() {
 
 //   NEWRPCCHANNEL("127.0.0.1:12345", channel);
 
@@ -116,15 +116,42 @@ void test_tcp_client() {
 
   // xxx
   // 协程
-// }
+  hl::IPNetAddr::s_ptr addr=std::make_shared<hl::IPNetAddr>("127.0.0.1",12346);
+  std::shared_ptr<hl::RpcChannel>channel=std::make_shared<hl::RpcChannel>(addr);
+
+  std::shared_ptr<makeOrderRequest>request=std::make_shared<makeOrderRequest>();
+  request->set_price(100);
+  request->set_goods("apple");
+
+  std::shared_ptr<makeOrderResponse>response=std::make_shared<makeOrderResponse>();
+
+  std::shared_ptr<hl::RpcConroller>controller=std::make_shared<hl::RpcConroller>();
+  controller->SetMsgId("99998888");
+
+  std::shared_ptr<hl::RpcClosure>closure=std::make_shared<hl::RpcClosure>([request,response,channel]()mutable{
+    INFOLOG("call rpc success,request[%s],response[%s]",request->ShortDebugString().c_str(),response->ShortDebugString().c_str());
+    INFOLOG("now exit eventloop",NULL);
+    channel->getTcpClient()->stop();
+    channel.reset();
+  
+  });
+
+  channel->init(controller,request,response,closure);
+
+  Order_Stub stub(channel.get());
+
+  stub.makeOrder(controller.get(),request.get(),response.get(),closure.get());
+
+
+}
 
 int main() {
 
   hl::Config::SetGlobalConfig("/home/hl/hl-tinyrpc/conf/hl.xml");
   hl::Logger::InitGlobalLogger();
 
-  test_tcp_client();
-  // test_rpc_channel();
+  // test_tcp_client();
+  test_rpc_channel();
 
   INFOLOG("test_rpc_channel end",NULL);
 

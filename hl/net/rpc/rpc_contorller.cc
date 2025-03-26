@@ -1,13 +1,13 @@
 #include"/home/hl/hl-tinyrpc/hl/net/rpc/rpc_controller.h"
 
-
+/// @brief 封装客户端的rpc调用
 namespace hl{
 
 
     void RpcConroller::Reset(){
         m_error_code=0;
         m_error_info="";
-        m_req_id="";
+        m_msg_id="";
     
         m_is_failed=false;
        m_is_cancled=false;
@@ -51,6 +51,7 @@ namespace hl{
     void RpcConroller::SetError(int32_t err_code,const std::string error_info){
         m_error_code=err_code;
         m_error_info=error_info;
+        m_is_failed=true;
     }
 
     int32_t RpcConroller::GetErrorCode(){
@@ -61,12 +62,12 @@ namespace hl{
         return m_error_info;
     }
 
-    void RpcConroller::SetReqId(const std::string&req_id){
-        m_req_id=req_id;
+    void RpcConroller::SetMsgId(const std::string&msg_id){
+        m_msg_id=msg_id;
     }
 
-    std::string RpcConroller::GetReqId(){
-        return m_req_id;
+    std::string RpcConroller::GetMsgId(){
+        return m_msg_id;
     }
 
     void RpcConroller::SetLocalAddr(NetAddr::s_ptr addr){

@@ -176,6 +176,14 @@ namespace hl{
                         DEBUGLOG("fd%d trigger EPOLLOUT event",fd_event->getFd());
                         addTask(fd_event->handle(FdEvent::OUT_EVENT));
                     }
+                    if(trigger_event.events&EPOLLERR)
+                    {
+                        DEBUGLOG("fd%d trigger EPOLLERR event",fd_event->getFd());
+                        deleteEpollEvent(fd_event);
+                        if(fd_event->handle(FdEvent::ERROR_EVENT)!=nullptr){
+                        addTask(fd_event->handle(FdEvent::ERROR_EVENT));
+                        }
+                    }
                 }
             }
 

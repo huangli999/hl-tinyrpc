@@ -6,7 +6,12 @@ namespace hl
 {
     class RpcClosure:public google::protobuf::Closure{  
         public:
-      
+      RpcClosure(std::function<void()>cb):m_cb(cb){
+
+      }
+      ~RpcClosure(){
+        
+      }
         void Run() override{
             if(m_cb!=nullptr){
                 m_cb();
