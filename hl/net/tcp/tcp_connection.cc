@@ -14,8 +14,8 @@ namespace hl{
     /// @param fd 
     /// @param buffer_size 
     /// @param peer_addr 
-    TcpConnection::TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr,TcpConnectionType type)
-    :m_event_loop(eventloop),m_peer_addr(peer_addr),m_state(NotConnected),m_fd(fd),m_connection_type(type){
+    TcpConnection::TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr,NetAddr::s_ptr local_addr,TcpConnectionType type)
+    :m_event_loop(eventloop),m_peer_addr(peer_addr),m_local_addr(local_addr),m_state(NotConnected),m_fd(fd),m_connection_type(type){
        
         m_in_buffer=std::make_shared<TcpBuffer>(buffer_size);
         m_out_buffer=std::make_shared<TcpBuffer>(buffer_size);
@@ -25,7 +25,7 @@ namespace hl{
 
         if(m_connection_type==TcpConnectionByServer){
             listenRead();
-            m_dispacther=std::make_shared<RpcDispatcher>();
+     
         }
        
 
@@ -144,7 +144,7 @@ namespace hl{
             std::shared_ptr<TinyPBProtocol>message=std::make_shared<TinyPBProtocol>();
             // message->m_pb_data="hello";
             // message->m_req_id=result[i]->m_req_id;
-            m_dispacther->dispatch(result[i],message);
+            RpcDispatcher::GetRpcDispatcher()->dispatch(result[i],message,this);
             replay_result.emplace_back(message);
         }
 
@@ -249,5 +249,13 @@ namespace hl{
 
     void TcpConnection::pushReadMessage(const std::string&req_id,std::function<void(AbstractProtocol::s_ptr)> done){
         m_read_dones.insert(std::make_pair(req_id,done));
+    }
+
+    NetAddr::s_ptr TcpConnection::getLocalAddr(){
+        return m_local_addr;
+    }
+
+    NetAddr::s_ptr TcpConnection::getPeerAddr(){
+        return m_peer_addr;
     }
 }

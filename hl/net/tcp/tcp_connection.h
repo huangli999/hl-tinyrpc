@@ -30,7 +30,7 @@ public:
 
 typedef std::shared_ptr<TcpConnection>s_ptr;
 
-TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr,TcpConnectionType type=TcpConnectionByServer);
+TcpConnection(EventLoop*eventloop,int fd,int buffer_size,NetAddr::s_ptr peer_addr,NetAddr::s_ptr local_addr,TcpConnectionType type=TcpConnectionByServer);
 
 ~TcpConnection();
 
@@ -61,13 +61,18 @@ void pushSendMessage(AbstractProtocol::s_ptr message,std::function<void(Abstract
 
 void pushReadMessage(const std::string&req_id,std::function<void(AbstractProtocol::s_ptr)> done);
 
+NetAddr::s_ptr getLocalAddr();
+
+NetAddr::s_ptr getPeerAddr();
+
+
 private:
 
 EventLoop*m_event_loop{NULL};//持有该连接的IO线程
 
-NetAddr::s_ptr m_local_addr;
-
 NetAddr::s_ptr m_peer_addr;
+
+NetAddr::s_ptr m_local_addr;
 
 TcpBuffer::s_ptr m_in_buffer;//输入缓冲区
 
@@ -88,7 +93,7 @@ std::vector<std::pair<AbstractProtocol::s_ptr,std::function<void(AbstractProtoco
 
 std::map<std::string ,std::function<void(AbstractProtocol::s_ptr)>>m_read_dones;//写入的回调函数
 
-std::shared_ptr<RpcDispatcher>m_dispacther;
+
 
 AbstractCoder*m_coder{NULL};
 };

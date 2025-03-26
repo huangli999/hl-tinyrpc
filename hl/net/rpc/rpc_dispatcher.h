@@ -5,15 +5,18 @@
 #include<memory>
 #include<google/protobuf/service.h>
 #include"/home/hl/hl-tinyrpc/hl/net/coder/tinypb_protocol.h"
+#include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
 namespace hl
 {
+    class TcpConnection;
    class RpcDispatcher{
 
     public:
-
+        static RpcDispatcher*GetRpcDispatcher();
+    public:
     typedef std::shared_ptr<google::protobuf::Service> service_s_ptr;//重命名
 
-    void dispatch(AbstractProtocol::s_ptr request,AbstractProtocol::s_ptr response);
+    void dispatch(AbstractProtocol::s_ptr request,AbstractProtocol::s_ptr response,TcpConnection*connection);
 
     void registerService(service_s_ptr service);//注册service方法
 

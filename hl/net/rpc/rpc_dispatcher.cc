@@ -4,12 +4,25 @@
 #include"/home/hl/hl-tinyrpc/hl/common/error_code.h"
 #include<google/protobuf/descriptor.h>
 #include<google/protobuf/message.h>
+#include"/home/hl/hl-tinyrpc/hl/net/rpc/rpc_controller.h"
+#include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
+
 namespace hl{
+
+    static RpcDispatcher*g_rpc_dispatcher=NULL;
+    RpcDispatcher*RpcDispatcher::GetRpcDispatcher(){
+        if(g_rpc_dispatcher!=NULL){
+            return g_rpc_dispatcher;
+        }
+        g_rpc_dispatcher=new RpcDispatcher();
+        return g_rpc_dispatcher;
+    }
+
 
     /// @brief 分发器
     /// @param request 
     /// @param response 
-    void RpcDispatcher::dispatch(AbstractProtocol::s_ptr request,AbstractProtocol::s_ptr response){
+    void RpcDispatcher::dispatch(AbstractProtocol::s_ptr request,AbstractProtocol::s_ptr response,TcpConnection*connection){
         std::shared_ptr<TinyPBProtocol>req_protocol=std::dynamic_pointer_cast<TinyPBProtocol>(request);
         std::shared_ptr<TinyPBProtocol>rsp_protocol=std::dynamic_pointer_cast<TinyPBProtocol>(response);
 
@@ -46,25 +59,48 @@ namespace hl{
         if(!req_msg->ParseFromString(req_protocol->m_pb_data)){
             ERRORLOG("%s deserlise error,oriigin message[%s]  ",req_protocol->m_req_id.c_str(),req_msg->ShortDebugString().c_str());
             setTinyPBError(rsp_protocol,ERROR_FAILED_DESERIALIZE,"deserlise error");
+            if(req_msg!=NULL){
+                delete req_msg;
+                req_msg=NULL;
+            }
             return;
         }
         INFOLOG("req_id[%d] get rpc request[%s]",req_protocol->m_req_id.c_str(),req_msg->ShortDebugString().c_str());
 
-        google::protobuf::Message*rsq_msg=service->GetResponsePrototype(method).New();
+        google::protobuf::Message*rsp_msg=service->GetResponsePrototype(method).New();
 
-        service->CallMethod(method,NULL,req_msg,rsq_msg,NULL);
+        RpcConroller rpcController;
+
+        rpcController.SetLocalAddr(connection->getLocalAddr());
+        rpcController.SetPeerAddr(connection->getPeerAddr());
+        rpcController.SetReqId(req_protocol->m_req_id);
+
+
+        service->CallMethod(method,&rpcController,req_msg,rsp_msg,NULL);
 
         rsp_protocol->m_req_id=req_protocol->m_req_id;
         rsp_protocol->m_method_name=req_protocol->m_method_name;
         
 
-        if(rsq_msg->SerializePartialToString(&(rsp_protocol->m_pb_data))){
+        if(rsp_msg->SerializePartialToString(&(rsp_protocol->m_pb_data))){
             ERRORLOG("%s serilize error ,origin message[%s]  ",req_protocol->m_req_id.c_str(),req_msg->ShortDebugString().c_str());
             setTinyPBError(rsp_protocol,ERROR_FAILED_SERIALIZE,"serilize error");
             return;
+            if(req_msg!=NULL){
+                delete req_msg;
+                req_msg=NULL;
+            }
+            if(rsp_msg!=NULL){
+                delete rsp_msg;
+                rsp_msg=NULL;
+            }
         }
         rsp_protocol->m_err_code=0;
-        INFOLOG("%s| dispatch success,request[%s],responce[%s]",req_protocol->m_req_id.c_str(),req_msg->ShortDebugString().c_str(),rsq_msg->ShortDebugString().c_str());
+        INFOLOG("%s| dispatch success,request[%s],responce[%s]",req_protocol->m_req_id.c_str(),req_msg->ShortDebugString().c_str(),rsp_msg->ShortDebugString().c_str());
+        delete req_msg;
+        delete rsp_msg;
+        req_msg=NULL;
+        rsp_msg=NULL;
     }
 
     void RpcDispatcher::registerService(service_s_ptr service){
