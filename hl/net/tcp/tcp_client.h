@@ -5,6 +5,7 @@
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
 #include"/home/hl/hl-tinyrpc/hl/net/coder/abstract_protocol.h"
 #include<memory>
+#include"/home/hl/hl-tinyrpc/hl/net/timer_event.h"
 namespace hl
 {
 class TcpClient{
@@ -29,15 +30,19 @@ void readMessage(const std::string &req_id,std::function<void(AbstractProtocol::
 
 void stop();//结束loop悬环
 
-NetAddr::s_ptr getPeerAddr();
+NetAddr::s_ptr getPeerAddr();//获得对端地址
 
-NetAddr::s_ptr getLocalAddr();
+NetAddr::s_ptr getLocalAddr();//获得当前地址
 
-void initLocalAddr();
+void initLocalAddr();//初始化当前地址
 
 int getConnectErrorCode();
 
 std::string getConnectErrorInfo();
+
+void addTimerEvent(TimerEvent::s_ptr timeevent);
+
+
 private:
 NetAddr::s_ptr m_peer_addr;
 NetAddr::s_ptr m_local_addr;

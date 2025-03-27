@@ -143,4 +143,8 @@ namespace hl
         }
         m_local_addr=std::make_shared<IPNetAddr>(local_addr);
     }
+
+    void TcpClient::addTimerEvent(TimerEvent::s_ptr time_event){
+        m_event_loop->addTimeEvent(time_event);
+    }
 } // namespace hl

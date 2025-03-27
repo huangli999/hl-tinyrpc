@@ -4,8 +4,24 @@
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/net_addr.h"
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_client.h"
 #include<memory>
+#include"/home/hl/hl-tinyrpc/hl/net/timer_event.h"
 namespace hl
 {
+    #define NEWMESSAGE(type,var_name) \
+    std::shared_ptr<type>var_name=std::make_shared<type>(); \
+
+    #define NEWRPCCHANNEL(var_name,addr) \
+    std::shared_ptr<hl::RpcChannel>var_name=std::make_shared<hl::RpcChannel>(std::make_shared<hl::IPNetAddr>(addr));\
+
+    #define NEWRPCCONTROLLER(var_name) \
+    std::shared_ptr<hl::RpcConroller>var_name=std::make_shared<hl::RpcConroller>();\
+
+    #define CALLRPC(channel,controller,request,response,closure,method_name) \
+    {\
+    channel->init(controller,request,response,closure);\
+    Order_Stub(channel.get()).method_name(controller.get(),request.get(),response.get(),closure.get());\
+    }\
+
     class RpcChannel: public google::protobuf::RpcChannel,public std::enable_shared_from_this<RpcChannel>{
         public:
         typedef std::shared_ptr<RpcChannel>s_ptr;
@@ -24,6 +40,8 @@ namespace hl
         void CallMethod(const google::protobuf::MethodDescriptor* method,
             google::protobuf::RpcController* controller, const google::protobuf::Message* request,
             google::protobuf::Message* response, google::protobuf::Closure* done);
+
+        TimerEvent::s_ptr getTimerEvent();
 
         google::protobuf::RpcController*GetController();
 
@@ -47,6 +65,7 @@ namespace hl
 
         TcpClient::s_ptr m_client{nullptr};
 
+        TimerEvent::s_ptr m_timer_event{nullptr};
     };
 } // namespace hl
 

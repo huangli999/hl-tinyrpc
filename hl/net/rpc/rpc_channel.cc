@@ -9,6 +9,7 @@
 #include<google/protobuf/message.h>
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_client.h"
 #include"/home/hl/hl-tinyrpc/hl/common/error_code.h"
+#include"/home/hl/hl-tinyrpc/hl/net/timer_event.h"
 namespace hl
 {
 
@@ -59,7 +60,18 @@ namespace hl
 
             s_ptr channel=shared_from_this();
 
-            
+            m_timer_event=std::make_shared<TimerEvent>(my_controller->GetTimeout(),false,
+            [my_controller,channel]()mutable{
+                my_controller->StartCancel();
+                my_controller->SetError(ERROR_RPC_CALL_TIMEOUT,"rpc call time out"+std::to_string(my_controller->GetTimeout()));
+                
+                if(channel->GetClosure()){
+                    channel->GetClosure()->Run();
+                }
+                channel.reset();
+            }
+            );
+            m_client->addTimerEvent(m_timer_event);
 
             m_client->connect([req_protocol,channel]()mutable{
 
@@ -78,6 +90,8 @@ namespace hl
                         INFOLOG("%s|get responce success,method_name[%s],peer_addr[%s],local_addr[%s]",rsp_protocol->m_msg_id.c_str(),rsp_protocol->m_method_name.c_str(),
                         channel->getTcpClient()->getPeerAddr()->toString().c_str(),channel->getTcpClient()->getLocalAddr()->toString().c_str());
                     
+                        //当成功读取到回包取消定时任务
+                        channel->getTimerEvent()->setCancle(true);
 
                         if(!(channel->GetReSponse()->ParseFromString(rsp_protocol->m_pb_data))){
                             ERRORLOG("%s|serialize error",rsp_protocol->m_msg_id.c_str());
@@ -92,7 +106,10 @@ namespace hl
                         }
                         INFOLOG("%s|rpc success,method_name[%s],peer_addr[%s],local_addr[%s]",rsp_protocol->m_msg_id.c_str(),rsp_protocol->m_method_name.c_str(),
                         channel->getTcpClient()->getPeerAddr()->toString().c_str(),channel->getTcpClient()->getLocalAddr()->toString().c_str());
-                        if(channel->GetClosure()){
+                        
+
+                        
+                        if(!my_controller->IsCanceled()&&channel->GetClosure()){
                             channel->GetClosure()->Run();
                         }
                         channel.reset();
@@ -137,5 +154,9 @@ namespace hl
 
         TcpClient*RpcChannel::getTcpClient(){
             return m_client.get();
+        }
+
+        TimerEvent::s_ptr RpcChannel::getTimerEvent(){
+            return m_timer_event;
         }
 } // namespace hl

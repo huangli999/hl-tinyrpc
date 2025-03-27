@@ -28,7 +28,7 @@ namespace hl{
         return m_error_info;
     }
 
-
+    /// @brief 设置rpc主动取消
     void RpcConroller::StartCancel(){
         m_is_cancled=true;
     }

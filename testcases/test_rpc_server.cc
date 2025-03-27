@@ -30,9 +30,9 @@ class OrderImpl : public Order {
                       const ::makeOrderRequest* request,
                       ::makeOrderResponse* response,
                       ::google::protobuf::Closure* done) {
-    // APPDEBUGLOG("start sleep 5s");
+    DEBUGLOG("start sleep 5s",NULL);
     // sleep(5);
-    // APPDEBUGLOG("end sleep 5s");
+    DEBUGLOG("end sleep 5s",NULL);
     if (request->price() < 10) {
       response->set_ret_code(-1);
       response->set_res_info("short balance");

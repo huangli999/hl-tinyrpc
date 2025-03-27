@@ -72,10 +72,7 @@ void test_rpc_channel() {
 
 //   NEWRPCCHANNEL("127.0.0.1:12345", channel);
 
-//   // std::shared_ptr<makeOrderRequest> request = std::make_shared<makeOrderRequest>();
 
-//   NEWMESSAGE(makeOrderRequest, request);
-//   NEWMESSAGE(makeOrderResponse, response);
 
 //   request->set_price(100);
 //   request->set_goods("apple");
@@ -116,31 +113,42 @@ void test_rpc_channel() {
 
   // xxx
   // 协程
-  hl::IPNetAddr::s_ptr addr=std::make_shared<hl::IPNetAddr>("127.0.0.1",12346);
-  std::shared_ptr<hl::RpcChannel>channel=std::make_shared<hl::RpcChannel>(addr);
 
-  std::shared_ptr<makeOrderRequest>request=std::make_shared<makeOrderRequest>();
+
+  NEWRPCCHANNEL(channel,"127.0.0.1:12346");
+  NEWMESSAGE(makeOrderRequest, request);
+  NEWMESSAGE(makeOrderResponse, response);
+  // hl::IPNetAddr::s_ptr addr=std::make_shared<hl::IPNetAddr>("127.0.0.1",12346);
+  // std::shared_ptr<hl::RpcChannel>channel=std::make_shared<hl::RpcChannel>(addr);
+
+  // std::shared_ptr<makeOrderRequest>request=std::make_shared<makeOrderRequest>();
   request->set_price(100);
   request->set_goods("apple");
 
-  std::shared_ptr<makeOrderResponse>response=std::make_shared<makeOrderResponse>();
+  // std::shared_ptr<makeOrderResponse>response=std::make_shared<makeOrderResponse>();
 
-  std::shared_ptr<hl::RpcConroller>controller=std::make_shared<hl::RpcConroller>();
+  // std::shared_ptr<hl::RpcConroller>controller=std::make_shared<hl::RpcConroller>();
+  NEWRPCCONTROLLER(controller);
   controller->SetMsgId("99998888");
 
-  std::shared_ptr<hl::RpcClosure>closure=std::make_shared<hl::RpcClosure>([request,response,channel]()mutable{
-    INFOLOG("call rpc success,request[%s],response[%s]",request->ShortDebugString().c_str(),response->ShortDebugString().c_str());
+  std::shared_ptr<hl::RpcClosure>closure=std::make_shared<hl::RpcClosure>([request,response,channel,controller]()mutable{
+    if(controller->GetErrorCode()==0){
+      INFOLOG("call rpc success,request[%s],response[%s]",request->ShortDebugString().c_str(),response->ShortDebugString().c_str());
+    }else{
+      ERRORLOG("call rpc failed",NULL);
+    }
     INFOLOG("now exit eventloop",NULL);
     channel->getTcpClient()->stop();
     channel.reset();
   
   });
 
-  channel->init(controller,request,response,closure);
+  CALLRPC(channel,controller,request,response,closure,makeOrder);
+  // channel->init(controller,request,response,closure);
 
-  Order_Stub stub(channel.get());
+  // Order_Stub stub(channel.get());
 
-  stub.makeOrder(controller.get(),request.get(),response.get(),closure.get());
+  // stub.makeOrder(controller.get(),request.get(),response.get(),closure.get());
 
 
 }
