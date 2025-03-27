@@ -6,7 +6,7 @@
 #include<google/protobuf/message.h>
 #include"/home/hl/hl-tinyrpc/hl/net/rpc/rpc_controller.h"
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
-
+#include"/home/hl/hl-tinyrpc/hl/common/runtime.h"
 namespace hl{
 
     static RpcDispatcher*g_rpc_dispatcher=NULL;
@@ -29,6 +29,9 @@ namespace hl{
         std::string method_full_name=req_protocol->m_method_name;
         std::string method_name;
         std::string service_name;
+
+        rsp_protocol->m_msg_id=req_protocol->m_msg_id;
+        rsp_protocol->m_method_name=req_protocol->m_method_name;
 
         if(!parseServiceFullName(method_full_name,service_name,method_name)){
             //后面补充出错处理
@@ -69,18 +72,19 @@ namespace hl{
 
         google::protobuf::Message*rsp_msg=service->GetResponsePrototype(method).New();
 
-        RpcConroller rpcController;
+        RpcConroller*rpcController=new RpcConroller();
 
-        rpcController.SetLocalAddr(connection->getLocalAddr());
-        rpcController.SetPeerAddr(connection->getPeerAddr());
-        rpcController.SetMsgId(req_protocol->m_msg_id);
+        rpcController->SetLocalAddr(connection->getLocalAddr());
+        rpcController->SetPeerAddr(connection->getPeerAddr());
+        rpcController->SetMsgId(req_protocol->m_msg_id);
+
+        RunTime::GetRunTime()->m_msg_id=req_protocol->m_msg_id;
+        RunTime::GetRunTime()->m_method_name=req_protocol->m_method_name;
+        service->CallMethod(method,rpcController,req_msg,rsp_msg,NULL);
 
 
-        service->CallMethod(method,&rpcController,req_msg,rsp_msg,NULL);
-
-        rsp_protocol->m_msg_id=req_protocol->m_msg_id;
-        rsp_protocol->m_method_name=req_protocol->m_method_name;
         
+
 
         if(!rsp_msg->SerializePartialToString(&(rsp_protocol->m_pb_data))){
             ERRORLOG("%s serilize error ,origin message[%s]  ",req_protocol->m_msg_id.c_str(),req_msg->ShortDebugString().c_str());

@@ -138,7 +138,7 @@ void test_rpc_channel() {
       ERRORLOG("call rpc failed",NULL);
     }
     INFOLOG("now exit eventloop",NULL);
-    channel->getTcpClient()->stop();
+    // channel->getTcpClient()->stop();
     channel.reset();
   
   });
@@ -155,8 +155,8 @@ void test_rpc_channel() {
 
 int main() {
 
-  hl::Config::SetGlobalConfig("/home/hl/hl-tinyrpc/conf/hl.xml");
-  hl::Logger::InitGlobalLogger();
+  hl::Config::SetGlobalConfig(NULL);
+  hl::Logger::InitGlobalLogger(0);
 
   // test_tcp_client();
   test_rpc_channel();

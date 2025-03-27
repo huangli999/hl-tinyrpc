@@ -30,16 +30,16 @@ class OrderImpl : public Order {
                       const ::makeOrderRequest* request,
                       ::makeOrderResponse* response,
                       ::google::protobuf::Closure* done) {
-    DEBUGLOG("start sleep 5s",NULL);
+    APPDEBUGLOG("start sleep 5s",NULL);
     // sleep(5);
-    DEBUGLOG("end sleep 5s",NULL);
+    APPDEBUGLOG("end sleep 5s",NULL);
     if (request->price() < 10) {
       response->set_ret_code(-1);
       response->set_res_info("short balance");
       return;
     }
     response->set_order_id("20230514");
-    // APPDEBUGLOG("call makeOrder success");
+    APPDEBUGLOG("call makeOrder success",NULL);
     if (done) {
       done->Run();
       delete done;
@@ -49,23 +49,23 @@ class OrderImpl : public Order {
 
 };
 
+int main(int argc,char*argv[]) {
 
-int main() {
+  if (argc != 2) {
+    printf("Start test_rpc_server error, argc not 2 \n");
+    printf("Start like this: \n");
+    printf("./test_rpc_server ../conf/hl.xml \n");
+    return 0;
+  }
 
-  // if (argc != 2) {
-  //   printf("Start test_rpc_server error, argc not 2 \n");
-  //   printf("Start like this: \n");
-  //   printf("./test_rpc_server ../conf/hl.xml \n");
-  //   return 0;
-  // }
-
-  hl::Config::SetGlobalConfig("/home/hl/hl-tinyrpc/conf/hl.xml");
-  hl::Logger::InitGlobalLogger();
+  hl::Config::SetGlobalConfig(argv[1]);
+  hl::Logger::InitGlobalLogger(1);
 
   std::shared_ptr<OrderImpl> service = std::make_shared<OrderImpl>();
+
   hl::RpcDispatcher::GetRpcDispatcher()->registerService(service);
 
-  hl::IPNetAddr::s_ptr addr = std::make_shared<hl::IPNetAddr>("127.0.0.1",12346);
+  hl::IPNetAddr::s_ptr addr = std::make_shared<hl::IPNetAddr>("127.0.0.1",hl::Config::GetGlobalConfig()->m_port);
 
   hl::TcpServer tcp_server(addr);
 
