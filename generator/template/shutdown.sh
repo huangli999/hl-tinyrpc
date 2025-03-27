@@ -2,7 +2,7 @@
 
 if [ -z "$1" ]
 then
-  echo "Please input rocket server name!"
+  echo "Please input hl server name!"
   exit -1
 fi
 
@@ -10,9 +10,9 @@ FILE_NAME=$1
 PROJECT_NAME=$(basename ${FILE_NAME})
 CURRENT_PATH=$(cd $(dirname $0); pwd)
 PROJECT_BIN_FILE="${CURRENT_PATH}"/"${PROJECT_NAME}"
-PROJECT_CONF_FILE="../conf/rocket.xml"
+PROJECT_CONF_FILE="../conf/hl.xml"
 
-echo "Shutdown rocket rpc project, name: ${PROJECT_NAME}, path: ${PROJECT_BIN_FILE}"
+echo "Shutdown hl rpc project, name: ${PROJECT_NAME}, path: ${PROJECT_BIN_FILE}"
 
 # check bin file exist
 if [ ! -e ${PROJECT_BIN_FILE} ]

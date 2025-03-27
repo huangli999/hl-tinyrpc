@@ -4,10 +4,10 @@ PROJECT_NAME=$(basename ${FILE_NAME})
 CURRENT_PATH=$(cd $(dirname $0); pwd)
 PROJECT_ROOT_PATH=$(cd $(dirname $0); cd ..; pwd)
 PROJECT_BIN_FILE="${CURRENT_PATH}"/"${PROJECT_NAME}"
-PROJECT_CONF_FILE="../conf/rocket.xml"
+PROJECT_CONF_FILE="../conf/hl.xml"
 
 
-echo "Run rocket rpc project, name: ${PROJECT_NAME}, path: ${PROJECT_BIN_FILE}"
+echo "Run hl rpc project, name: ${PROJECT_NAME}, path: ${PROJECT_BIN_FILE}"
 
 if [ -z "$1" ]
 then
@@ -17,14 +17,14 @@ fi
 # check bin file exist
 if [ ! -e ${PROJECT_BIN_FILE} ]
 then
-  echo "Run rocket rpc server eror, file: ${PROJECT_BIN_FILE} not exist, please check file"
+  echo "Run hl rpc server eror, file: ${PROJECT_BIN_FILE} not exist, please check file"
   exit -1
 fi
 
 # check config xml file exist
 if [ ! -e ${PROJECT_CONF_FILE} ]
 then
-  echo "Run rocket rpc error, file: ${PROJECT_CONF_FILE} not exist, please check config file"
+  echo "Run hl rpc error, file: ${PROJECT_CONF_FILE} not exist, please check config file"
   exit -1
 fi
 
@@ -37,7 +37,7 @@ fi
 
 sh shutdown.sh ${PROJECT_NAME}
 nohup ./${PROJECT_NAME} ${PROJECT_CONF_FILE} & > ${PROJECT_ROOT_PATH}/log/${PROJECT_NAME}.nohup_log
-echo "Start rocket rpc server ${PROJECT_CONF_FILE} succ"
+echo "Start hl rpc server ${PROJECT_CONF_FILE} succ"
 
 
 

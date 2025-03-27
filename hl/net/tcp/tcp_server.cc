@@ -1,5 +1,6 @@
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_server.h"
 #include"/home/hl/hl-tinyrpc/hl/common/log.h"
+#include"/home/hl/hl-tinyrpc/hl/common/config.h"
 #include"/home/hl/hl-tinyrpc/hl/net/fd_event.h"
 #include"/home/hl/hl-tinyrpc/hl/net/tcp/tcp_connection.h"
 
@@ -20,7 +21,7 @@ namespace hl
         
         m_main_event_loop=EventLoop::GetCurrentEventLoop();
 
-        m_io_thread_group=new IOThreadGroup(2);//读取配置文件
+        m_io_thread_group=new IOThreadGroup(Config::GetGlobalConfig()->m_io_threads);//读取配置文件
 
         m_listen_fd_event=new FdEvent(m_acceptor->getListenFd());
 

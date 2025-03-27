@@ -68,12 +68,12 @@ def parseInput():
 
 def printHelp():
     print('=' * 100)
-    print('Welcome to use Rocket Generator, this is help document:\n')
+    print('Welcome to use hl Generator, this is help document:\n')
     print('Run Environment: Python(version 3.6 or high version is better).')
     print('Run Platform: Linux Only(kernel version >= 3.9 is better).')
     print('Others: Only protobuf3 support, not support protobuf2.\n')
     print('Usage:')
-    print('rocket_generator.py -[options][target]\n')
+    print('hl_generator.py -[options][target]\n')
     print('Options:')
     print('-h, --help')
     print(('    ') + 'Print help document.\n')
@@ -86,7 +86,7 @@ def printHelp():
 
     print('')
     print('For example:')
-    print('rocket_generator.py -i order_server.proto -o ./')
+    print('hl_generator.py -i order_server.proto -o ./')
 
     print('')
     print('=' * 100)  
@@ -208,7 +208,7 @@ def gen_run_script():
     
 def gen_conf_file():
     print('=' * 100)
-    file_name = "rocket.xml"
+    file_name = "hl.xml"
     print('Begin to generate tinyrpc conf file')
     out_file = conf_path + '/' + file_name
     if os.path.exists(out_file):
@@ -230,7 +230,7 @@ def gen_conf_file():
     file.write(content)
     file.close()
     print('succ write to ' + out_file)
-    print('End generate rocket conf file')
+    print('End generate hl conf file')
     print('=' * 100)
 
 
@@ -453,7 +453,7 @@ def generate_framework_code():
     # genneator each interface.cc and .h file
     interface_head_file_temlate = Template(open(generator_path + '/template/interface.h.template','r').read())
     interface_cc_file_temlate = Template(open(generator_path + '/template/interface.cc.template','r').read())
-    interface_test_client_file_template = Template(open(generator_path + '/template/test_rocket_client.cc.template','r').read())
+    interface_test_client_file_template = Template(open(generator_path + '/template/test_hl_client.cc.template','r').read())
 
     stub_name = service_name + "_Stub"
     for each in interface_list:
@@ -521,7 +521,7 @@ def generate_framework_code():
     print('End generate each interface.cc & interface.h & test_interface_client.h')
     print('=' * 100)
         
-    print('End generate rocket framework code')
+    print('End generate hl framework code')
     print('=' * 100)
 
 def generate_project():
@@ -530,7 +530,7 @@ def generate_project():
         parseInput()
 
         print('=' * 150)
-        print("Begin to generate rocket rpc server") 
+        print("Begin to generate hl rpc server") 
 
         generate_dir()
 
@@ -544,11 +544,11 @@ def generate_project():
 
         generate_framework_code()
 
-        print('Succ generate rocket project')
+        print('Succ generate hl project')
         print('=' * 150)
     
     except Exception as e:
-        print("Failed to generate rocket rpc server, err: " + str(e))
+        print("Failed to generate hl rpc server, err: " + str(e))
         print('=' * 150)
 
 

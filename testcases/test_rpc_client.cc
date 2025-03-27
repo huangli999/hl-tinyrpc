@@ -143,7 +143,7 @@ void test_rpc_channel() {
   
   });
 
-  CALLRPC(channel,controller,request,response,closure,makeOrder);
+  CALLRPC(channel,Order_Stub,controller,request,response,closure,makeOrder);
   // channel->init(controller,request,response,closure);
 
   // Order_Stub stub(channel.get());
