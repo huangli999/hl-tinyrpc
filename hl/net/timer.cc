@@ -7,7 +7,7 @@ namespace hl{
 
     /// @brief 初始化时间
     Timer::Timer():FdEvent(){
-        m_fd=timerfd_create(CLOCK_MONOTONIC,TFD_NONBLOCK|TFD_CLOEXEC);
+        m_fd=timerfd_create(CLOCK_MONOTONIC,TFD_NONBLOCK|TFD_CLOEXEC);//当定时器触发会向文件描述符写入一个八字节的数
 
         DEBUGLOG("timer fd=%d",m_fd);
 
@@ -80,8 +80,8 @@ namespace hl{
         }
         //执行定时任务
         int64_t now=getNowMs();//获取当前时间戳
-        std::vector<TimerEvent::s_ptr>tmps;//定时器数组
-        std::vector<std::pair<int64_t,std::function<void()>>>tasks;//定时器数组,包含时间戳和回调函数
+        std::vector<TimerEvent::s_ptr>tmps;//存储已到期的定时器事件
+        std::vector<std::pair<int64_t,std::function<void()>>>tasks;//存储回调函数和到期时间
         ScopeMutex<Mutex>lock(m_mutex);
         auto it=m_pending_events.begin();
         for(it=m_pending_events.begin();it!=m_pending_events.end();++it){
@@ -142,7 +142,7 @@ namespace hl{
         memset(&value,0,sizeof(value));
         value.it_value=ts;
 
-        int rt=timerfd_settime(m_fd,0,&value,NULL);
+        int rt=timerfd_settime(m_fd,0,&value,NULL);//在指定时间戳后会变回可读，epoll_wait返回并执行定时任务
         if(rt!=0){
             ERRORLOG("timerfd_settime,error,error=%d,error info[%s]",errno,strerror(errno));
         }

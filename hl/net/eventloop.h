@@ -48,11 +48,11 @@ static EventLoop*GetCurrentEventLoop();
 
 
 private:
-    pid_t m_thread_id{0};
+    pid_t m_thread_id{0};//主线程
 
     std::set<int>m_listen_fds;
 
-    int m_epoll_fd{0};
+    int m_epoll_fd{0};//epoll句柄
 
     int m_wakeup_fd{0};
 

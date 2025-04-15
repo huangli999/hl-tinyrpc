@@ -9,6 +9,8 @@
 #include<string.h>
 namespace hl
 {
+
+
     TcpClient::TcpClient(NetAddr::s_ptr peer_addr):m_peer_addr(peer_addr){
         m_event_loop=EventLoop::GetCurrentEventLoop();
         m_fd=socket(peer_addr->getFamily(),SOCK_STREAM,0);
@@ -19,6 +21,7 @@ namespace hl
 
         m_fd_event=FdEventGroup::GetFdEventGroup()->getFdEvent(m_fd);
         m_fd_event->setNonBlock();
+        
         m_connection=std::make_shared<TcpConnection>(m_event_loop,m_fd,128,peer_addr,nullptr,TcpConnectionByClient);
         m_connection->setConnectionType(TcpConnectionByClient);
     }

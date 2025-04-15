@@ -56,7 +56,7 @@ namespace hl{
         }
         m_thread_id=getThreadId();
 
-        m_epoll_fd=epoll_create(10);
+        m_epoll_fd=epoll_create(10);//创建epoll句柄
 
 
         if(m_epoll_fd==-1)
@@ -109,6 +109,7 @@ namespace hl{
 
         m_wakeup_fd_event->listen(FdEvent::IN_EVENT,[this](){
             char buf[8];
+
             while(read(m_wakeup_fd,buf,8)!=-1&&errno!=EAGAIN)
             {
 
@@ -148,8 +149,8 @@ namespace hl{
             int timeout=g_epoll_max_timeout;
             epoll_event result_events[g_epoll_max_events];
             // DEBUGLOG("now begin epoll_wait",NULL);
-            //将定时任务放在result_events数组中，并且监听
-            //遍历数组，当触发可读或可写事件放入任务队列中
+            
+            //返回的新触发IO事件的socket个数，将新的待处理事件放入resul_event中
             int rt=epoll_wait(m_epoll_fd,result_events,g_epoll_max_events,timeout);
             DEBUGLOG("now end epoll_wait,rt=%d",rt);
 

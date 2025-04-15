@@ -3,15 +3,28 @@
 #include<sys/time.h>
 #include<sstream>
 #include<stdio.h>
+#include <signal.h>
 #include"/home/hl/hl-tinyrpc/hl/net/eventloop.h"
 #include"/home/hl/hl-tinyrpc/hl/common/runtime.h"
 #include"/home/hl/hl-tinyrpc/hl/common/config.h"
-
+#include<assert.h>
 
 
 
 namespace hl{
-static Logger*g_logger=nullptr;
+static Logger*g_logger=NULL;
+
+void CoredumpHandler(int signal_no) {
+    ERRORLOG("progress received invalid signal, will exit",NULL);
+    g_logger->flush();
+    pthread_join(g_logger->getAsyncLopger()->m_thread, NULL);
+    pthread_join(g_logger->getAsyncAppLopger()->m_thread, NULL);
+  
+    signal(signal_no, SIG_DFL);
+    raise(signal_no);
+  }
+  
+
 
 Logger::Logger(LogLevel level,int type):m_set_level(level),m_type(type){
     if(m_type==0){
@@ -28,12 +41,29 @@ Logger::Logger(LogLevel level,int type):m_set_level(level),m_type(type){
         Config::GetGlobalConfig()->m_log_max_size);
 
 }
+
+void Logger::flush() {
+    syncLoop();
+    m_asnyc_log->stop();
+    m_asnyc_log->flush();
+  
+    m_asnyc_app_log->stop();
+    m_asnyc_app_log->flush();
+  }
+
 void Logger::init(){
     if(m_type==0){
         return;
     }
     m_timer_event=std::make_shared<TimerEvent>(Config::GetGlobalConfig()->m_log_sync_interval,
     true,std::bind(&Logger::syncLoop,this));
+    signal(SIGSEGV, CoredumpHandler);
+    signal(SIGABRT, CoredumpHandler);
+    signal(SIGTERM, CoredumpHandler);
+    signal(SIGKILL, CoredumpHandler);
+    signal(SIGINT, CoredumpHandler);
+    signal(SIGSTKFLT, CoredumpHandler);
+
 
 EventLoop::GetCurrentEventLoop()->addTimeEvent(m_timer_event);
 }
@@ -121,7 +151,7 @@ std::string LogLevelToString(LogLevel level){
     {
         //如果时同步日志直接打印
         if(m_type==0){
-            printf((msg+"\n").c_str());
+            printf((msg+"\n").c_str(),NULL);
             return;
         }
         ScopeMutex<Mutex>lock(m_mutex);
@@ -154,13 +184,13 @@ std::string LogLevelToString(LogLevel level){
     :m_file_name(file_name),m_file_path(file_path),m_max_file_size(max_size){
         sem_init(&m_sempahore,0,0);
 
+        
+
         pthread_create(&m_thread,NULL,&AsyncLogger::loop,this);
 
-        pthread_cond_init(&m_condition,NULL);
+        
 
         sem_wait(&m_sempahore);
-
-
 
     }
 
@@ -168,6 +198,8 @@ std::string LogLevelToString(LogLevel level){
     void* AsyncLogger::loop(void*arg){
 
         AsyncLogger*logger=reinterpret_cast<AsyncLogger*>(arg);
+
+        assert(pthread_cond_init(&logger->m_condition,NULL)==0);
 
         sem_post(&logger->m_sempahore);
 
@@ -207,6 +239,7 @@ std::string LogLevelToString(LogLevel level){
             ss<<logger->m_file_path<<logger->m_file_path<<"_"
             <<std::string(date)<<"_log.";
             std::string log_file_name=ss.str()+std::to_string(logger->m_no);
+            
             if(logger->m_reopen_flag){
                 if(logger->m_file_handler){
                     fclose(logger->m_file_handler);
@@ -257,7 +290,6 @@ std::string LogLevelToString(LogLevel level){
 
        if(!tmp_vec.empty()){
        m_asnyc_log->pushLogBuffer(tmp_vec);
-
        }
        tmp_vec.clear();
 
@@ -277,7 +309,9 @@ std::string LogLevelToString(LogLevel level){
     void AsyncLogger::pushLogBuffer(std::vector<std::string>&vec){
         ScopeMutex<Mutex>lock(m_mutex);
         m_buffer.push(vec);
+        pthread_cond_signal(&(m_condition));
         lock.unlock();
+        
 
     }
 

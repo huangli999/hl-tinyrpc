@@ -149,6 +149,15 @@ public:
 
     static Logger*GetGlobalLogger();//全局访问接口，对应单例模式
 
+
+    AsyncLogger::s_ptr getAsyncAppLopger() {
+        return m_asnyc_app_log;
+      }
+    
+    AsyncLogger::s_ptr getAsyncLopger() {
+        return m_asnyc_log;
+      }
+
     static void InitGlobalLogger(int type=1);
 
     void log();//打印日志
@@ -161,6 +170,7 @@ public:
     
     void syncLoop();
     
+    void flush();
 
 private:
     LogLevel m_set_level;

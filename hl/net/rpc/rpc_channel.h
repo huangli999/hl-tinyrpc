@@ -16,8 +16,9 @@ namespace hl
     #define NEWRPCCONTROLLER(var_name) \
     std::shared_ptr<hl::RpcConroller>var_name=std::make_shared<hl::RpcConroller>();\
 
-    #define CALLRPC(channel,stub_name,controller,request,response,closure,method_name) \
+    #define CALLRPC(addr,stub_name,controller,request,response,closure,method_name) \
     {\
+    NEWRPCCHANNEL(channel,addr);\
     channel->init(controller,request,response,closure);\
     stub_name(channel.get()).method_name(controller.get(),request.get(),response.get(),closure.get());\
     }\

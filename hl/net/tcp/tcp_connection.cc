@@ -133,8 +133,8 @@ namespace hl{
         // int size=m_in_buffer->readAble();
         // tmp.reserve(size);
         // m_in_buffer->readFromBuffer(tmp,size);
-        std::vector<AbstractProtocol::s_ptr>result;
-        std::vector<AbstractProtocol::s_ptr>replay_result;
+        std::vector<AbstractProtocol::s_ptr>result;//请求事件
+        std::vector<AbstractProtocol::s_ptr>replay_result;//响应回包
 
         m_coder->decode(result,m_in_buffer);
         for(size_t i=0;i<result.size();++i){
